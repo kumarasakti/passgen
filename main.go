@@ -17,8 +17,10 @@ const (
 	Uppercase     = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	Numbers       = "0123456789"
 	Symbols       = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-	Version       = "1.0.0"
 )
+
+// Version can be overridden at build time using -ldflags "-X main.Version=x.y.z"
+var Version = "dev"
 
 type PasswordConfig struct {
 	Length         int

@@ -40,10 +40,10 @@ jobs:
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
     
     - name: Build for all platforms
-      run: make build-all
+      run: make build-all VERSION=${{ steps.version.outputs.VERSION }}
     
     - name: Create release archives
-      run: make release
+      run: make release VERSION=${{ steps.version.outputs.VERSION }}
     
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1

@@ -2,7 +2,8 @@
 
 # Variables
 BINARY_NAME=passgen
-VERSION=1.0.0
+# Dynamic versioning based on git tags
+VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_DIR=build
 DIST_DIR=dist
 
@@ -24,14 +25,14 @@ all: clean test build
 # Build the binary
 .PHONY: build
 build:
-	@echo "Building $(BINARY_NAME)..."
+	@echo "Building $(BINARY_NAME) version $(VERSION)..."
 	@mkdir -p $(BUILD_DIR)
 	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) .
 
 # Build for multiple platforms
 .PHONY: build-all
 build-all: clean
-	@echo "Building for multiple platforms..."
+	@echo "Building $(BINARY_NAME) version $(VERSION) for multiple platforms..."
 	@mkdir -p $(DIST_DIR)
 	
 	# Linux AMD64
@@ -49,7 +50,7 @@ build-all: clean
 	# Windows AMD64
 	GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME)-windows-amd64.exe .
 	
-	@echo "Cross-compilation complete!"
+	@echo "Cross-compilation complete for version $(VERSION)!"
 
 # Run tests
 .PHONY: test
@@ -75,13 +76,13 @@ deps:
 # Install the binary to GOPATH/bin
 .PHONY: install
 install: build
-	@echo "Installing $(BINARY_NAME)..."
+	@echo "Installing $(BINARY_NAME) version $(VERSION)..."
 	@cp $(BUILD_DIR)/$(BINARY_NAME) $(GOPATH)/bin/
 
 # Run the application
 .PHONY: run
 run: build
-	@echo "Running $(BINARY_NAME)..."
+	@echo "Running $(BINARY_NAME) version $(VERSION)..."
 	@./$(BUILD_DIR)/$(BINARY_NAME)
 
 # Format code
@@ -103,7 +104,7 @@ lint:
 # Create release archives
 .PHONY: release
 release: build-all
-	@echo "Creating release archives..."
+	@echo "Creating release archives for version $(VERSION)..."
 	@mkdir -p $(DIST_DIR)/releases
 	
 	# Create tar.gz for Unix systems
@@ -115,12 +116,17 @@ release: build-all
 	# Create zip for Windows
 	@cd $(DIST_DIR) && zip releases/$(BINARY_NAME)-$(VERSION)-windows-amd64.zip $(BINARY_NAME)-windows-amd64.exe
 	
-	@echo "Release archives created in $(DIST_DIR)/releases/"
+	@echo "Release archives created in $(DIST_DIR)/releases/ for version $(VERSION)"
 
 # Development workflow
 .PHONY: dev
 dev: deps fmt lint test build
-	@echo "Development build complete!"
+	@echo "Development build complete for version $(VERSION)!"
+
+# Show version
+.PHONY: version
+version:
+	@echo "Current version: $(VERSION)"
 
 # Help
 .PHONY: help
@@ -138,4 +144,5 @@ help:
 	@echo "  lint       - Lint code"
 	@echo "  release    - Create release archives"
 	@echo "  dev        - Full development workflow"
+	@echo "  version    - Show current version"
 	@echo "  help       - Show this help message" 
