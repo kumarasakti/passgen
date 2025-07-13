@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.21
+    
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+    
+    - name: Install dependencies
+      run: go mod download
+    
+    - name: Run tests
+      run: go test -v ./...
+    
+    - name: Extract version
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+    
+    - name: Build for all platforms
+      run: make build-all
+    
+    - name: Create release archives
+      run: make release
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the tag message or generate a simple changelog
+        TAG_MESSAGE=$(git tag -l --format='%(contents)' ${{ steps.version.outputs.VERSION }})
+        if [ -z "$TAG_MESSAGE" ]; then
+          TAG_MESSAGE="Release ${{ steps.version.outputs.VERSION }}"
+        fi
+        
+        # Get commits since last tag
+        PREV_TAG=$(git describe --tags --abbrev=0 ${{ steps.version.outputs.VERSION }}^)
+        if [ $? -eq 0 ]; then
+          CHANGELOG=$(git log --pretty=format:"- %s" ${PREV_TAG}..${{ steps.version.outputs.VERSION }})
+        else
+          CHANGELOG=$(git log --pretty=format:"- %s")
+        fi
+        
+        # Create release notes
+        cat > release_notes.md << EOF
+        # ${{ steps.version.outputs.VERSION }}
+        
+        $TAG_MESSAGE
+        
+        ## Changes
+        $CHANGELOG
+        
+        ## Installation
+        
+        ### Download Pre-built Binaries
+        Download the appropriate binary for your platform from the assets below.
+        
+        ### Using Go
+        \`\`\`bash
+        go install github.com/kumarasakti/passgen@${{ steps.version.outputs.VERSION }}
+        \`\`\`
+        
+        ### Build from Source
+        \`\`\`bash
+        git clone https://github.com/kumarasakti/passgen.git
+        cd passgen
+        git checkout ${{ steps.version.outputs.VERSION }}
+        make build
+        \`\`\`
+        
+        ## Usage
+        \`\`\`bash
+        # Generate default password
+        passgen
+        
+        # Generate secure password
+        passgen --secure -l 16
+        
+        # Check password strength
+        passgen check "mypassword"
+        
+        # Use presets
+        passgen preset secure
+        \`\`\`
+        EOF
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.VERSION }}
+        name: passgen ${{ steps.version.outputs.VERSION }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        files: |
+          dist/releases/*
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Update latest tag
+      run: |
+        git tag -f latest
+        git push origin latest --force 
