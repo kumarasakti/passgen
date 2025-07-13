@@ -14,23 +14,71 @@ A secure, customizable password generator CLI tool written in Go.
 
 ## Installation
 
-### Download Pre-built Binaries
+### Method 1: Automated Installation (Recommended)
 
-Download the latest release for your platform from the [releases page](https://github.com/kumarasakti/passgen/releases).
+The easiest way to install passgen with automatic PATH configuration:
 
-### Build from Source
+```bash
+# Download and run the installation script
+curl -sSL https://raw.githubusercontent.com/kumarasakti/passgen/main/install.sh | bash
+
+# Or clone and run locally
+git clone https://github.com/kumarasakti/passgen.git
+cd passgen
+./install.sh
+```
+
+This script will:
+- Install passgen using `go install`
+- Automatically detect your shell (zsh, bash, fish)
+- Add Go's bin directory to your PATH
+- Make passgen immediately available
+
+### Method 2: Quick One-liner
+
+```bash
+curl -sSL https://raw.githubusercontent.com/kumarasakti/passgen/main/quick-install.sh | bash
+```
+
+### Method 3: Manual Go Install
+
+```bash
+go install github.com/kumarasakti/passgen@latest
+```
+
+**Important**: After manual installation, you need to add Go's bin directory to your PATH:
+
+```bash
+# For zsh users (default on macOS)
+echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
+source ~/.zshrc
+
+# For bash users
+echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Method 4: Download Pre-built Binaries
+
+Download the latest release for your platform from the [releases page](https://github.com/kumarasakti/passgen/releases) and place it in your PATH.
+
+### Method 5: Build from Source
 
 ```bash
 git clone https://github.com/kumarasakti/passgen.git
 cd passgen
 make build
+sudo mv build/passgen /usr/local/bin/  # Install to system PATH
 ```
 
-### Install with Go
+### Verify Installation
 
 ```bash
-go install github.com/kumarasakti/passgen@latest
+passgen --version
+passgen --help
 ```
+
+If you get "command not found", your Go bin directory is not in PATH. Use Method 1 (automated installation) or follow the PATH setup instructions in Method 3.
 
 ## Usage
 
