@@ -133,22 +133,22 @@ func analyzePassword(password string, cfg PasswordConfig) PasswordAnalysis {
 		strength = "Extremely Strong"
 		strengthEmoji = "🔥"
 		securityLevel = "Quantum-resistant for the foreseeable future!"
-		celebration = "You're a security champion! 🏆"
+		celebration = "Brr, that's ice cold security! Even hackers are shivering! 🥶"
 	case entropy >= 80:
 		strength = "Very Strong"
 		strengthEmoji = "💪"
 		securityLevel = "Exceeds security standards for high-value accounts"
-		celebration = "Outstanding security choice! 🌟"
+		celebration = "Someone's taking this security thing seriously! 🌟"
 	case entropy >= 60:
 		strength = "Strong"
 		strengthEmoji = "💯"
 		securityLevel = "Great for securing important accounts"
-		celebration = "Excellent password! 🎯"
+		celebration = "Not bad, you actually read the security guidelines! 🎯"
 	case entropy >= 40:
 		strength = "Medium"
 		strengthEmoji = "⚡"
 		securityLevel = "Adequate for most general purposes"
-		celebration = "Good job! 👍"
+		celebration = "Well, it's... adequate. I guess that's something! 👍"
 		if length < 12 {
 			tips = append(tips, "Consider using 12+ characters for better security")
 		}
@@ -159,7 +159,7 @@ func analyzePassword(password string, cfg PasswordConfig) PasswordAnalysis {
 		strength = "Weak"
 		strengthEmoji = "😰"
 		securityLevel = "Suitable only for low-security uses"
-		celebration = "Let's make it stronger! 💪"
+		celebration = "Oh honey, we need to talk about your password choices... 💪"
 		tips = append(tips, "Use at least 12 characters")
 		tips = append(tips, "Include uppercase, lowercase, numbers, and symbols")
 		tips = append(tips, "Try `passgen --secure` for maximum protection!")
@@ -167,7 +167,7 @@ func analyzePassword(password string, cfg PasswordConfig) PasswordAnalysis {
 		strength = "Very Weak"
 		strengthEmoji = "🚨"
 		securityLevel = "Not recommended for any security purposes"
-		celebration = "Time for an upgrade! 🚀"
+		celebration = "Yikes! Even my grandma would crack this in her sleep! 🚀"
 		tips = append(tips, "Use at least 12 characters")
 		tips = append(tips, "Include multiple character types")
 		tips = append(tips, "Try `passgen --secure -l 16` for excellent security!")
@@ -291,15 +291,6 @@ func printPasswordAnalysis(analysis PasswordAnalysis) {
 
 	// Celebration message
 	fmt.Printf("\n%s\n", analysis.Celebration)
-
-	// Footer
-	if analysis.Entropy >= 60 {
-		fmt.Printf("U have a secure password! 🥶🥶🥶\n")
-	} else if analysis.Entropy >= 40 {
-		fmt.Printf("Keep it secure! 🛡️\n")
-	} else {
-		fmt.Printf("Stay safe out there! 🔐\n")
-	}
 }
 
 func generatePassword(cfg PasswordConfig) (string, error) {
