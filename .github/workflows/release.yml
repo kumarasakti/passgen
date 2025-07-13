@@ -49,7 +49,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.version.outputs.VERSION }}
-        name: ${{ steps.version.outputs.VERSION }}
+        name: passgen ${{ steps.version.outputs.VERSION }}
         draft: false
         prerelease: false
         files: |
