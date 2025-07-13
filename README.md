@@ -16,7 +16,7 @@ A secure, customizable password generator CLI tool written in Go.
 
 ### Method 1: Automated Installation (Recommended)
 
-The easiest way to install passgen with automatic PATH configuration:
+**🚀 No PATH configuration needed!** The easiest way to install passgen:
 
 ```bash
 # Download and run the installation script
@@ -34,22 +34,31 @@ This script will:
 - Add Go's bin directory to your PATH
 - Make passgen immediately available
 
-### Method 2: Quick One-liner
+### Method 2: System-Wide Installation
+
+**🔧 Requires sudo but works instantly:**
+
+```bash
+# Install to /usr/local/bin (no PATH issues)
+curl -sSL https://raw.githubusercontent.com/kumarasakti/passgen/main/install-system.sh | bash
+```
+
+### Method 3: Quick One-liner
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/kumarasakti/passgen/main/quick-install.sh | bash
 ```
 
-### Method 3: Manual Go Install
+### Method 4: Manual Go Install
 
 ```bash
 go install github.com/kumarasakti/passgen@latest
 ```
 
-**Important**: After manual installation, you need to add Go's bin directory to your PATH:
+**⚠️ Important**: After manual installation, you need to add Go's bin directory to your PATH:
 
 ```bash
-# For zsh users (default on macOS)
+# For zsh users 
 echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
 source ~/.zshrc
 
@@ -58,11 +67,13 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Method 4: Download Pre-built Binaries
+**💡 Tip**: Use Method 1 or 2 instead to avoid PATH issues!
+
+### Method 5: Download Pre-built Binaries
 
 Download the latest release for your platform from the [releases page](https://github.com/kumarasakti/passgen/releases) and place it in your PATH.
 
-### Method 5: Build from Source
+### Method 6: Build from Source
 
 ```bash
 git clone https://github.com/kumarasakti/passgen.git
