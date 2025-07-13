@@ -164,43 +164,111 @@ passgen check "mypassword123"
 ### Generate Different Types of Passwords
 
 ```bash
-# Default password
+# Default password (14 characters, uppercase, lowercase, symbols)
 $ passgen
-Kj8mN2pL9xQr
+🎉 Password Generated Successfully! 🎉
 
-# Secure password with all character types
+Password: -PUZ:@)x$DSloj
+
+📊 Password Analysis:
+✅ Length: 14 characters (Good!)
+✅ Character Sets: Lowercase, Uppercase, Symbols
+✅ Entropy: 88.0 bits (Very Strong!)
+✅ Strength: Very Strong 💪
+
+🔒 Security Assessment:
+• This password would take approximately 4892016 years to crack with modern hardware
+• Contains 3 different character types for excellent complexity
+• Exceeds security standards for high-value accounts
+
+Someone's taking this security thing seriously! 🌟
+
+# Secure password with all character types (gets the ice cold message!)
 $ passgen --secure -l 20
-Kj8mN2pL9xQr!@#$%^&*
+🎉 Password Generated Successfully! 🎉
 
-# Simple password (no symbols)
-$ passgen --simple -l 16
-Kj8mN2pL9xQrTyUi
+Password: =;1.7y$A]RqH8a7):s&C
 
-# PIN number
-$ passgen preset pin
-582947
+📊 Password Analysis:
+✅ Length: 20 characters (Excellent!)
+✅ Character Sets: Lowercase, Uppercase, Numbers, Symbols
+✅ Entropy: 129.2 bits (Extremely Strong!)
+✅ Strength: Extremely Strong 🔥
 
-# Multiple passwords
-$ passgen -c 3 -l 10
-Kj8mN2pL9x
-Qr3tY6uI8o
-Pl4sD7fG9h
+🔒 Security Assessment:
+• This password would take approximately 1.2e+19 years to crack with modern hardware
+• Contains 4 different character types for maximum complexity
+• Quantum-resistant for the foreseeable future!
+
+Brr, that's ice cold security! Even hackers are shivering! 🥶
+
+# Medium strength password (with sarcastic feedback)
+$ passgen -l 8
+✨ Password Generated! ✨
+
+Password: gz*yK#<&
+
+📊 Password Analysis:
+⚠️  Length: 8 characters (Could be longer)
+✅ Character Sets: Lowercase, Uppercase, Symbols
+✅ Entropy: 50.3 bits (Medium!)
+✅ Strength: Medium ⚡
+
+🔒 Security Assessment:
+• This password would take approximately 11.4 minutes to crack with modern hardware
+• Contains 3 different character types for excellent complexity
+• Adequate for most general purposes
+
+💡 Tips for improvement:
+• Consider using 12+ characters for better security
+
+Well, it's... adequate. I guess that's something! 👍
 ```
 
 ### Advanced Usage
 
 ```bash
-# Exclude confusing characters
-$ passgen --exclude-similar -l 12
-KjmnpqrTyUiE
+# Generate multiple passwords
+$ passgen -c 2 -l 10
+🎉 Password Generated Successfully! 🎉
 
-# Custom character exclusion
-$ passgen --exclude "aeiou" -l 12
-KjmnpqrTyUiE
+Password: CIMc|OVmzv
 
-# Only uppercase and numbers
-$ passgen --lower=false --symbols=false -l 8
-KJ8MN2PL
+📊 Password Analysis:
+✅ Length: 10 characters (Good!)
+✅ Character Sets: Lowercase, Uppercase, Symbols
+✅ Entropy: 62.9 bits (Strong!)
+✅ Strength: Strong 💯
+
+🔒 Security Assessment:
+• This password would take approximately 1.2 years to crack with modern hardware
+• Contains 3 different character types for excellent complexity
+• Great for securing important accounts
+
+Not bad, you actually read the security guidelines! 🎯
+
+==================================================
+
+🎉 Password Generated Successfully! 🎉
+
+Password: oXEduV)%|K
+
+📊 Password Analysis:
+✅ Length: 10 characters (Good!)
+✅ Character Sets: Lowercase, Uppercase, Symbols
+✅ Entropy: 62.9 bits (Strong!)
+✅ Strength: Strong 💯
+
+🔒 Security Assessment:
+• This password would take approximately 1.2 years to crack with modern hardware
+• Contains 3 different character types for excellent complexity
+• Great for securing important accounts
+
+Not bad, you actually read the security guidelines! 🎯
+
+# Check version
+$ passgen --version
+passgen version v1.0.3
 ```
 
 ## Development
