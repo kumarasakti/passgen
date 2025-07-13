@@ -34,13 +34,43 @@ This script will:
 - Add Go's bin directory to your PATH
 - Make passgen immediately available
 
+> **Note**: For PowerShell users, see [Method 3: PowerShell Installation](#method-3-powershell-installation-windowslinuxmacos) for a native PowerShell experience.
+
 ### Method 2: Quick One-liner
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/kumarasakti/passgen/main/quick-install.sh | bash
 ```
 
-### Method 3: Manual Go Install
+### Method 3: PowerShell Installation (Windows/Linux/macOS)
+
+For PowerShell users on any platform:
+
+```powershell
+# Automated installation with interactive prompts
+irm https://raw.githubusercontent.com/kumarasakti/passgen/main/install.ps1 | iex
+
+# Quick installation without prompts
+irm https://raw.githubusercontent.com/kumarasakti/passgen/main/quick-install.ps1 | iex
+
+# Or run locally
+git clone https://github.com/kumarasakti/passgen.git
+cd passgen
+.\install.ps1
+```
+
+This PowerShell script will:
+- Install passgen using `go install`
+- Automatically configure your PowerShell profile
+- Add Go's bin directory to your PATH
+- Work on Windows PowerShell, PowerShell Core, and Linux/macOS
+
+**For Linux/macOS with PowerShell:**
+```bash
+curl -sSL https://raw.githubusercontent.com/kumarasakti/passgen/main/install.ps1 | pwsh
+```
+
+### Method 4: Manual Go Install
 
 ```bash
 go install github.com/kumarasakti/passgen@latest
@@ -58,11 +88,18 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Method 4: Download Pre-built Binaries
+**For PowerShell users:**
+```powershell
+# Add to your PowerShell profile
+$env:PATH += ";$(go env GOPATH)\bin"  # Windows
+$env:PATH += ":$(go env GOPATH)/bin"  # Linux/macOS
+```
+
+### Method 5: Download Pre-built Binaries
 
 Download the latest release for your platform from the [releases page](https://github.com/kumarasakti/passgen/releases) and place it in your PATH.
 
-### Method 5: Build from Source
+### Method 6: Build from Source
 
 ```bash
 git clone https://github.com/kumarasakti/passgen.git
@@ -272,6 +309,17 @@ passgen version v1.0.3
 ```
 
 ## Development
+
+### Installation Scripts
+
+This repository includes multiple installation scripts for different environments:
+
+- **`install.sh`** - Full-featured bash installer with shell detection (zsh, bash, fish)
+- **`quick-install.sh`** - Minimal bash installer for quick setup
+- **`install.ps1`** - Full-featured PowerShell installer (Windows/Linux/macOS)
+- **`quick-install.ps1`** - Minimal PowerShell installer for quick setup
+
+All scripts automatically handle PATH configuration and provide colored output with error handling.
 
 ### Building
 
