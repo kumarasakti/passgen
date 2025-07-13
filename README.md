@@ -49,7 +49,7 @@ go install github.com/kumarasakti/passgen@latest
 **Important**: After manual installation, you need to add Go's bin directory to your PATH:
 
 ```bash
-# For zsh users (default on macOS)
+# For zsh users
 echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
 source ~/.zshrc
 
