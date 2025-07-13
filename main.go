@@ -3,16 +3,18 @@ package main
 import (
 	"crypto/rand"
 	"fmt"
+	"math"
 	"math/big"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
 const (
-	DefaultLength = 12
+	DefaultLength = 14
 	Lowercase     = "abcdefghijklmnopqrstuvwxyz"
 	Uppercase     = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	Numbers       = "0123456789"
@@ -31,7 +33,272 @@ type PasswordConfig struct {
 	Count          int
 }
 
+type PasswordAnalysis struct {
+	Password       string
+	Length         int
+	CharsetSize    int
+	CharacterTypes []string
+	Entropy        float64
+	Strength       string
+	StrengthEmoji  string
+	TimeToCrack    string
+	SecurityLevel  string
+	Tips           []string
+	Celebration    string
+}
+
 var config PasswordConfig
+
+func calculateCharsetSize(cfg PasswordConfig) int {
+	size := 0
+	if cfg.IncludeLower {
+		size += 26
+	}
+	if cfg.IncludeUpper {
+		size += 26
+	}
+	if cfg.IncludeNumbers {
+		size += 10
+	}
+	if cfg.IncludeSymbols {
+		size += len(Symbols)
+	}
+
+	// Adjust for excluded characters
+	if cfg.ExcludeSimilar {
+		similar := "il1Lo0O"
+		for _, char := range similar {
+			if cfg.IncludeLower && strings.Contains(Lowercase, string(char)) {
+				size--
+			}
+			if cfg.IncludeUpper && strings.Contains(Uppercase, string(char)) {
+				size--
+			}
+			if cfg.IncludeNumbers && strings.Contains(Numbers, string(char)) {
+				size--
+			}
+		}
+	}
+
+	if cfg.ExcludeChars != "" {
+		for _, char := range cfg.ExcludeChars {
+			if cfg.IncludeLower && strings.Contains(Lowercase, string(char)) {
+				size--
+			}
+			if cfg.IncludeUpper && strings.Contains(Uppercase, string(char)) {
+				size--
+			}
+			if cfg.IncludeNumbers && strings.Contains(Numbers, string(char)) {
+				size--
+			}
+			if cfg.IncludeSymbols && strings.Contains(Symbols, string(char)) {
+				size--
+			}
+		}
+	}
+
+	return size
+}
+
+func analyzePassword(password string, cfg PasswordConfig) PasswordAnalysis {
+	length := len(password)
+	charsetSize := calculateCharsetSize(cfg)
+
+	// Calculate entropy: log2(charset^length)
+	entropy := float64(length) * math.Log2(float64(charsetSize))
+
+	// Determine character types present
+	var charTypes []string
+	if cfg.IncludeLower {
+		charTypes = append(charTypes, "Lowercase")
+	}
+	if cfg.IncludeUpper {
+		charTypes = append(charTypes, "Uppercase")
+	}
+	if cfg.IncludeNumbers {
+		charTypes = append(charTypes, "Numbers")
+	}
+	if cfg.IncludeSymbols {
+		charTypes = append(charTypes, "Symbols")
+	}
+
+	// Determine strength and security level
+	var strength, strengthEmoji, securityLevel, celebration string
+	var tips []string
+
+	switch {
+	case entropy >= 100:
+		strength = "Extremely Strong"
+		strengthEmoji = "🔥"
+		securityLevel = "Quantum-resistant for the foreseeable future!"
+		celebration = "You're a security champion! 🏆"
+	case entropy >= 80:
+		strength = "Very Strong"
+		strengthEmoji = "💪"
+		securityLevel = "Exceeds security standards for high-value accounts"
+		celebration = "Outstanding security choice! 🌟"
+	case entropy >= 60:
+		strength = "Strong"
+		strengthEmoji = "💯"
+		securityLevel = "Great for securing important accounts"
+		celebration = "Excellent password! 🎯"
+	case entropy >= 40:
+		strength = "Medium"
+		strengthEmoji = "⚡"
+		securityLevel = "Adequate for most general purposes"
+		celebration = "Good job! 👍"
+		if length < 12 {
+			tips = append(tips, "Consider using 12+ characters for better security")
+		}
+		if len(charTypes) < 3 {
+			tips = append(tips, "Add more character types (symbols, numbers) for stronger security")
+		}
+	case entropy >= 25:
+		strength = "Weak"
+		strengthEmoji = "😰"
+		securityLevel = "Suitable only for low-security uses"
+		celebration = "Let's make it stronger! 💪"
+		tips = append(tips, "Use at least 12 characters")
+		tips = append(tips, "Include uppercase, lowercase, numbers, and symbols")
+		tips = append(tips, "Try `passgen --secure` for maximum protection!")
+	default:
+		strength = "Very Weak"
+		strengthEmoji = "🚨"
+		securityLevel = "Not recommended for any security purposes"
+		celebration = "Time for an upgrade! 🚀"
+		tips = append(tips, "Use at least 12 characters")
+		tips = append(tips, "Include multiple character types")
+		tips = append(tips, "Try `passgen --secure -l 16` for excellent security!")
+	}
+
+	// Calculate time to crack (assuming 1 trillion guesses per second)
+	guessesPerSecond := 1e12
+	possibleCombinations := math.Pow(float64(charsetSize), float64(length))
+	secondsToCrack := possibleCombinations / (2 * guessesPerSecond) // Average case
+
+	var timeToCrack string
+	if secondsToCrack < 60 {
+		timeToCrack = "Less than a minute"
+	} else if secondsToCrack < 3600 {
+		timeToCrack = fmt.Sprintf("%.1f minutes", secondsToCrack/60)
+	} else if secondsToCrack < 86400 {
+		timeToCrack = fmt.Sprintf("%.1f hours", secondsToCrack/3600)
+	} else if secondsToCrack < 31536000 {
+		timeToCrack = fmt.Sprintf("%.1f days", secondsToCrack/86400)
+	} else if secondsToCrack < 31536000000 {
+		timeToCrack = fmt.Sprintf("%.1f years", secondsToCrack/31536000)
+	} else {
+		// For very large numbers, use scientific notation
+		years := secondsToCrack / 31536000
+		if years > 1e15 {
+			timeToCrack = fmt.Sprintf("%.1e years", years)
+		} else {
+			timeToCrack = fmt.Sprintf("%.0f years", years)
+		}
+	}
+
+	return PasswordAnalysis{
+		Password:       password,
+		Length:         length,
+		CharsetSize:    charsetSize,
+		CharacterTypes: charTypes,
+		Entropy:        entropy,
+		Strength:       strength,
+		StrengthEmoji:  strengthEmoji,
+		TimeToCrack:    timeToCrack,
+		SecurityLevel:  securityLevel,
+		Tips:           tips,
+		Celebration:    celebration,
+	}
+}
+
+func printPasswordAnalysis(analysis PasswordAnalysis) {
+	// Header with appropriate emoji
+	if analysis.Entropy >= 60 {
+		fmt.Printf("🎉 Password Generated Successfully! 🎉\n\n")
+	} else if analysis.Entropy >= 40 {
+		fmt.Printf("✨ Password Generated! ✨\n\n")
+	} else {
+		fmt.Printf("⚠️  Basic Password Generated ⚠️\n\n")
+	}
+
+	// Display password
+	fmt.Printf("Password: %s\n\n", analysis.Password)
+
+	// Analysis section
+	fmt.Printf("📊 Password Analysis:\n")
+
+	// Length assessment
+	lengthStatus := "✅"
+	lengthComment := "(Good!)"
+	if analysis.Length < 8 {
+		lengthStatus = "❌"
+		lengthComment = "(Too Short)"
+	} else if analysis.Length < 12 {
+		lengthStatus = "⚠️ "
+		lengthComment = "(Could be longer)"
+	} else if analysis.Length >= 16 {
+		lengthComment = "(Excellent!)"
+	}
+	fmt.Printf("%s Length: %d characters %s\n", lengthStatus, analysis.Length, lengthComment)
+
+	// Character sets
+	charStatus := "✅"
+	if len(analysis.CharacterTypes) < 2 {
+		charStatus = "❌"
+	} else if len(analysis.CharacterTypes) < 3 {
+		charStatus = "⚠️ "
+	}
+	fmt.Printf("%s Character Sets: %s\n", charStatus, strings.Join(analysis.CharacterTypes, ", "))
+
+	// Entropy
+	entropyStatus := "✅"
+	if analysis.Entropy < 25 {
+		entropyStatus = "❌"
+	} else if analysis.Entropy < 40 {
+		entropyStatus = "⚠️ "
+	}
+	fmt.Printf("%s Entropy: %.1f bits (%s!)\n", entropyStatus, analysis.Entropy, analysis.Strength)
+
+	// Overall strength
+	fmt.Printf("✅ Strength: %s %s\n\n", analysis.Strength, analysis.StrengthEmoji)
+
+	// Security assessment
+	fmt.Printf("🔒 Security Assessment:\n")
+	fmt.Printf("• This password would take approximately %s to crack with modern hardware\n", analysis.TimeToCrack)
+
+	if len(analysis.CharacterTypes) > 1 {
+		fmt.Printf("• Contains %d different character types for %s complexity\n",
+			len(analysis.CharacterTypes),
+			map[int]string{2: "good", 3: "excellent", 4: "maximum"}[len(analysis.CharacterTypes)])
+	}
+
+	fmt.Printf("• %s\n", analysis.SecurityLevel)
+
+	if config.ExcludeSimilar {
+		fmt.Printf("• No similar characters (like i, l, 1, O, 0) to avoid confusion\n")
+	}
+
+	// Tips if any
+	if len(analysis.Tips) > 0 {
+		fmt.Printf("\n💡 Tips for improvement:\n")
+		for _, tip := range analysis.Tips {
+			fmt.Printf("• %s\n", tip)
+		}
+	}
+
+	// Celebration message
+	fmt.Printf("\n%s\n", analysis.Celebration)
+
+	// Footer
+	if analysis.Entropy >= 60 {
+		fmt.Printf("U have a secure password! 🥶🥶🥶\n")
+	} else if analysis.Entropy >= 40 {
+		fmt.Printf("Keep it secure! 🛡️\n")
+	} else {
+		fmt.Printf("Stay safe out there! 🔐\n")
+	}
+}
 
 func generatePassword(cfg PasswordConfig) (string, error) {
 	charset := ""
@@ -88,6 +355,7 @@ func checkPasswordStrength(password string) (string, int) {
 	score := 0
 	feedback := []string{}
 
+	// Length check
 	if len(password) >= 12 {
 		score += 2
 	} else if len(password) >= 8 {
@@ -96,6 +364,7 @@ func checkPasswordStrength(password string) (string, int) {
 		feedback = append(feedback, "Password should be at least 8 characters long")
 	}
 
+	// Character variety checks
 	if matched, _ := regexp.MatchString(`[a-z]`, password); matched {
 		score += 1
 	} else {
@@ -120,6 +389,7 @@ func checkPasswordStrength(password string) (string, int) {
 		feedback = append(feedback, "Add special characters")
 	}
 
+	// Bonus for length
 	if len(password) >= 16 {
 		score += 1
 	}
@@ -169,7 +439,16 @@ Examples:
 				fmt.Fprintf(os.Stderr, "Error generating password: %v\n", err)
 				os.Exit(1)
 			}
-			fmt.Println(password)
+
+			// Analyze and display password with enhanced output
+			analysis := analyzePassword(password, config)
+			printPasswordAnalysis(analysis)
+
+			// Add separator between multiple passwords
+			if config.Count > 1 && i < config.Count-1 {
+				fmt.Println("\n" + strings.Repeat("=", 50) + "\n")
+				time.Sleep(100 * time.Millisecond) // Brief pause for dramatic effect
+			}
 		}
 	},
 }
@@ -231,7 +510,10 @@ var presetCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "Error generating password: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Println(password)
+
+		// Analyze and display password with enhanced output
+		analysis := analyzePassword(password, cfg)
+		printPasswordAnalysis(analysis)
 	},
 }
 
@@ -241,8 +523,8 @@ func init() {
 		Length:         DefaultLength,
 		IncludeLower:   true,
 		IncludeUpper:   true,
-		IncludeNumbers: true,
-		IncludeSymbols: false,
+		IncludeNumbers: false,
+		IncludeSymbols: true,
 		ExcludeSimilar: false,
 		Count:          1,
 	}
@@ -251,8 +533,8 @@ func init() {
 	rootCmd.Flags().IntVarP(&config.Length, "length", "l", DefaultLength, "Password length")
 	rootCmd.Flags().BoolVar(&config.IncludeLower, "lower", true, "Include lowercase letters")
 	rootCmd.Flags().BoolVar(&config.IncludeUpper, "upper", true, "Include uppercase letters")
-	rootCmd.Flags().BoolVarP(&config.IncludeNumbers, "numbers", "n", true, "Include numbers")
-	rootCmd.Flags().BoolVarP(&config.IncludeSymbols, "symbols", "s", false, "Include symbols")
+	rootCmd.Flags().BoolVarP(&config.IncludeNumbers, "numbers", "n", false, "Include numbers")
+	rootCmd.Flags().BoolVarP(&config.IncludeSymbols, "symbols", "s", true, "Include symbols")
 	rootCmd.Flags().BoolVar(&config.ExcludeSimilar, "exclude-similar", false, "Exclude similar characters (il1Lo0O)")
 	rootCmd.Flags().StringVar(&config.ExcludeChars, "exclude", "", "Characters to exclude from password")
 	rootCmd.Flags().IntVarP(&config.Count, "count", "c", 1, "Number of passwords to generate")
