@@ -22,7 +22,7 @@ const (
 )
 
 // Version can be overridden at build time using -ldflags "-X main.Version=x.y.z"
-var Version = "v1.0.2"
+var Version = "v1.0.3"
 
 type PasswordConfig struct {
 	Length         int
