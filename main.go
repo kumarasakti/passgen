@@ -222,8 +222,8 @@ func printPasswordAnalysis(analysis PasswordAnalysis) {
 		fmt.Printf("⚠️  Basic Password Generated ⚠️\n\n")
 	}
 
-	// Display password
-	fmt.Printf("Password: %s\n\n", analysis.Password)
+	// Display password in bold
+	fmt.Printf("Password: \033[1m%s\033[0m\n\n", analysis.Password)
 
 	// Analysis section
 	fmt.Printf("📊 Password Analysis:\n")
