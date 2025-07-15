@@ -347,14 +347,20 @@ func generatePassword(cfg PasswordConfig) (string, error) {
 func checkPasswordStrength(password string) (string, int) {
 	score := 0
 	feedback := []string{}
+	sarcasticComments := []string{}
 
 	// Length check
 	if len(password) >= 12 {
 		score += 2
+		if len(password) >= 16 {
+			sarcasticComments = append(sarcasticComments, "Wow, someone actually read the security guidelines! 👏")
+		}
 	} else if len(password) >= 8 {
 		score += 1
+		sarcasticComments = append(sarcasticComments, "8 characters? How... minimalistic of you 🤔")
 	} else {
 		feedback = append(feedback, "Password should be at least 8 characters long")
+		sarcasticComments = append(sarcasticComments, "Really? That's shorter than most people's names! 😅")
 	}
 
 	// Character variety checks
@@ -362,24 +368,28 @@ func checkPasswordStrength(password string) (string, int) {
 		score += 1
 	} else {
 		feedback = append(feedback, "Add lowercase letters")
+		sarcasticComments = append(sarcasticComments, "No lowercase letters? Are we SHOUTING all the time? 📢")
 	}
 
 	if matched, _ := regexp.MatchString(`[A-Z]`, password); matched {
 		score += 1
 	} else {
 		feedback = append(feedback, "Add uppercase letters")
+		sarcasticComments = append(sarcasticComments, "No capitals? I guess we're going for the e.e. cummings aesthetic 🎭")
 	}
 
 	if matched, _ := regexp.MatchString(`[0-9]`, password); matched {
 		score += 1
 	} else {
 		feedback = append(feedback, "Add numbers")
+		sarcasticComments = append(sarcasticComments, "Numbers are optional now? Math teachers everywhere are crying 😢")
 	}
 
 	if matched, _ := regexp.MatchString(`[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]`, password); matched {
 		score += 2
 	} else {
 		feedback = append(feedback, "Add special characters")
+		sarcasticComments = append(sarcasticComments, "No symbols? Your password is as plain as unseasoned chicken 🐔")
 	}
 
 	// Bonus for length
@@ -387,23 +397,47 @@ func checkPasswordStrength(password string) (string, int) {
 		score += 1
 	}
 
-	var strength string
+	var strength, strengthEmoji, celebration string
 	switch {
 	case score >= 7:
 		strength = "Very Strong"
+		strengthEmoji = "🔥"
+		celebration = "Impressive! Your password could probably withstand a zombie apocalypse! 🧟‍♂️"
 	case score >= 5:
 		strength = "Strong"
+		strengthEmoji = "💪"
+		celebration = "Not bad! Your password has some real backbone! 🦴"
 	case score >= 3:
 		strength = "Medium"
+		strengthEmoji = "😐"
+		celebration = "It's... adequate. Like a participation trophy for password security 🏆"
 	case score >= 1:
 		strength = "Weak"
+		strengthEmoji = "😰"
+		celebration = "Yikes! This password couldn't protect a diary from a nosy sibling! 📖"
 	default:
 		strength = "Very Weak"
+		strengthEmoji = "🚨"
+		celebration = "Oh dear... this password is weaker than my WiFi signal in the basement! 📶"
 	}
 
-	result := fmt.Sprintf("Strength: %s (Score: %d/8)", strength, score)
+	result := "🔍 Password Analysis Results:\n"
+	result += fmt.Sprintf("Strength: %s %s (Score: %d/8)\n", strength, strengthEmoji, score)
+	result += fmt.Sprintf("\n%s\n", celebration)
+
+	if len(sarcasticComments) > 0 {
+		result += "\n💭 Honest Feedback:\n"
+		for _, comment := range sarcasticComments {
+			result += fmt.Sprintf("• %s\n", comment)
+		}
+	}
+
 	if len(feedback) > 0 {
-		result += "\nSuggestions: " + strings.Join(feedback, ", ")
+		result += "\n💡 Actionable Suggestions:\n"
+		for _, suggestion := range feedback {
+			result += fmt.Sprintf("• %s\n", suggestion)
+		}
+		result += "\nPro tip: Try 'passgen --secure -l 16' for a password that actually means business! 🚀"
 	}
 
 	return result, score
