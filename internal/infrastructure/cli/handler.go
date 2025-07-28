@@ -109,14 +109,14 @@ func (h *Handler) HandleWordPassword(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: exactly one word argument required\n")
 		os.Exit(1)
 	}
-	
+
 	word := args[0]
-	
+
 	// Get flags
 	strategy, _ := cmd.Flags().GetString("strategy")
 	complexity, _ := cmd.Flags().GetString("complexity")
 	count, _ := cmd.Flags().GetInt("count")
-	
+
 	// Validate strategy
 	var transformationStrategy entities.TransformationStrategy
 	switch strategy {
@@ -136,7 +136,7 @@ func (h *Handler) HandleWordPassword(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: invalid strategy '%s'. Available: leetspeak, mixed-case, suffix, prefix, insert, hybrid\n", strategy)
 		os.Exit(1)
 	}
-	
+
 	// Validate complexity
 	var complexityLevel entities.ComplexityLevel
 	switch complexity {
@@ -150,7 +150,7 @@ func (h *Handler) HandleWordPassword(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: invalid complexity '%s'. Available: low, medium, high\n", complexity)
 		os.Exit(1)
 	}
-	
+
 	// Create request
 	req := application.GenerateWordPasswordRequest{
 		Word:       word,
@@ -158,14 +158,14 @@ func (h *Handler) HandleWordPassword(cmd *cobra.Command, args []string) {
 		Complexity: complexityLevel,
 		Count:      count,
 	}
-	
+
 	// Generate word-based passwords
 	resp, err := h.passwordService.GenerateWordPasswords(req)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error generating word-based password: %v\n", err)
 		os.Exit(1)
 	}
-	
+
 	// Format and display output
 	output := h.formatter.FormatWordPasswordGeneration(resp)
 	fmt.Print(output)
@@ -255,11 +255,11 @@ Examples:
 		Args: cobra.ExactArgs(1),
 		Run:  h.HandleWordPassword,
 	}
-	
+
 	// Add word-specific flags
 	wordCmd.Flags().String("strategy", "hybrid", "Transformation strategy (leetspeak, mixed-case, suffix, prefix, insert, hybrid)")
 	wordCmd.Flags().String("complexity", "medium", "Complexity level (low, medium, high)")
 	wordCmd.Flags().IntP("count", "c", 1, "Number of password variations to generate")
-	
+
 	return wordCmd
 }

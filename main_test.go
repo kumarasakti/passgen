@@ -38,7 +38,7 @@ func TestMainIntegration(t *testing.T) {
 	// Test that required commands exist
 	commands := rootCmd.Commands()
 	var hasWord, hasCheck bool
-	
+
 	for _, cmd := range commands {
 		if cmd.Name() == "word" {
 			hasWord = true

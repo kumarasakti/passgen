@@ -20,9 +20,9 @@ type PasswordAnalysis struct {
 	Tips           []string
 	Celebration    string
 	// Word-based password specific fields
-	WordBased              bool
-	OriginalWord           string
-	TransformationQuality  string
+	WordBased             bool
+	OriginalWord          string
+	TransformationQuality string
 }
 
 // PasswordAnalyzer handles password security analysis

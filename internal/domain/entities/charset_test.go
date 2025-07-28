@@ -9,11 +9,11 @@ func TestCharacterSet_BuildCharset(t *testing.T) {
 	cs := NewCharacterSet()
 
 	tests := []struct {
-		name           string
-		config         PasswordConfig
-		wantContains   []string
+		name            string
+		config          PasswordConfig
+		wantContains    []string
 		wantNotContains []string
-		wantErr        bool
+		wantErr         bool
 	}{
 		{
 			name: "all character sets",
@@ -25,9 +25,9 @@ func TestCharacterSet_BuildCharset(t *testing.T) {
 				IncludeSymbols: true,
 				Count:          1,
 			},
-			wantContains:   []string{"a", "Z", "5", "!"},
+			wantContains:    []string{"a", "Z", "5", "!"},
 			wantNotContains: []string{},
-			wantErr:        false,
+			wantErr:         false,
 		},
 		{
 			name: "exclude similar characters",
@@ -39,9 +39,9 @@ func TestCharacterSet_BuildCharset(t *testing.T) {
 				ExcludeSimilar: true,
 				Count:          1,
 			},
-			wantContains:   []string{"a", "Z", "5"},
+			wantContains:    []string{"a", "Z", "5"},
 			wantNotContains: []string{"i", "l", "1", "L", "o", "0", "O"},
-			wantErr:        false,
+			wantErr:         false,
 		},
 		{
 			name: "custom exclusions",
@@ -52,9 +52,9 @@ func TestCharacterSet_BuildCharset(t *testing.T) {
 				ExcludeChars: "aeiou",
 				Count:        1,
 			},
-			wantContains:   []string{"b", "Z"},
+			wantContains:    []string{"b", "Z"},
 			wantNotContains: []string{"a", "e", "i", "o", "u"},
-			wantErr:        false,
+			wantErr:         false,
 		},
 		{
 			name: "lowercase only",
@@ -63,9 +63,9 @@ func TestCharacterSet_BuildCharset(t *testing.T) {
 				IncludeLower: true,
 				Count:        1,
 			},
-			wantContains:   []string{"a", "z"},
+			wantContains:    []string{"a", "z"},
 			wantNotContains: []string{"A", "1", "!"},
-			wantErr:        false,
+			wantErr:         false,
 		},
 		{
 			name: "invalid config",

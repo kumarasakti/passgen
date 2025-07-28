@@ -146,7 +146,7 @@ func TestPasswordAnalyzer_AnalyzePassword(t *testing.T) {
 
 			// Verify that strength is a valid value
 			validStrengths := []entities.PasswordStrength{
-				entities.VeryWeak, entities.Weak, entities.Medium, 
+				entities.VeryWeak, entities.Weak, entities.Medium,
 				entities.Strong, entities.VeryStrong, entities.ExtremelyStrong,
 			}
 			validStrength := false

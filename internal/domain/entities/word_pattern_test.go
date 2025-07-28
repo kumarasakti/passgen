@@ -74,7 +74,7 @@ func TestWordPattern_Creation(t *testing.T) {
 			if wp.Word != tt.expected {
 				t.Errorf("NewWordPattern().Word = %v, want %v", wp.Word, tt.expected)
 			}
-			
+
 			// Check default values
 			if wp.Strategy != StrategyHybrid {
 				t.Errorf("Expected default strategy to be hybrid")

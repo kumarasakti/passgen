@@ -43,9 +43,9 @@ type CheckPasswordResponse struct {
 
 // PasswordService orchestrates password-related operations
 type PasswordService struct {
-	generator           *services.PasswordGenerator
-	analyzer            *services.PasswordAnalyzer
-	strengthChecker     *services.PasswordStrengthChecker
+	generator             *services.PasswordGenerator
+	analyzer              *services.PasswordAnalyzer
+	strengthChecker       *services.PasswordStrengthChecker
 	wordPasswordGenerator *services.WordPasswordGenerator
 }
 
@@ -53,9 +53,9 @@ type PasswordService struct {
 func NewPasswordService() *PasswordService {
 	analyzer := services.NewPasswordAnalyzer()
 	return &PasswordService{
-		generator:           services.NewPasswordGenerator(),
-		analyzer:            analyzer,
-		strengthChecker:     services.NewPasswordStrengthChecker(),
+		generator:             services.NewPasswordGenerator(),
+		analyzer:              analyzer,
+		strengthChecker:       services.NewPasswordStrengthChecker(),
 		wordPasswordGenerator: services.NewWordPasswordGenerator(analyzer),
 	}
 }
@@ -134,27 +134,27 @@ func (ps *PasswordService) getPresetConfig(presetType string) (entities.Password
 func (ps *PasswordService) GenerateWordPasswords(req GenerateWordPasswordRequest) (GenerateWordPasswordResponse, error) {
 	// Create word pattern
 	pattern := entities.NewWordPattern(req.Word)
-	
+
 	// Set strategy if provided
 	if req.Strategy != "" {
 		pattern.SetStrategy(req.Strategy)
 	}
-	
+
 	// Set complexity if provided
 	if req.Complexity != "" {
 		pattern.SetComplexity(req.Complexity)
 	}
-	
+
 	// Default count to 1 if not specified
 	count := req.Count
 	if count <= 0 {
 		count = 1
 	}
-	
+
 	// Generate passwords
 	var passwords []string
 	var err error
-	
+
 	if count == 1 {
 		password, genErr := ps.wordPasswordGenerator.GenerateWordPassword(pattern)
 		if genErr != nil {
@@ -167,7 +167,7 @@ func (ps *PasswordService) GenerateWordPasswords(req GenerateWordPasswordRequest
 			return GenerateWordPasswordResponse{}, err
 		}
 	}
-	
+
 	// Analyze each password
 	analyses := make([]services.PasswordAnalysis, len(passwords))
 	for i, password := range passwords {
@@ -177,7 +177,7 @@ func (ps *PasswordService) GenerateWordPasswords(req GenerateWordPasswordRequest
 		}
 		analyses[i] = *analysis
 	}
-	
+
 	return GenerateWordPasswordResponse{
 		Passwords: passwords,
 		Analyses:  analyses,

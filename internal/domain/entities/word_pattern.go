@@ -10,12 +10,12 @@ import (
 type TransformationStrategy string
 
 const (
-	StrategyLeetspeak  TransformationStrategy = "leetspeak"
-	StrategyMixedCase  TransformationStrategy = "mixed-case"
-	StrategySuffix     TransformationStrategy = "suffix"
-	StrategyPrefix     TransformationStrategy = "prefix"
-	StrategyInsert     TransformationStrategy = "insert"
-	StrategyHybrid     TransformationStrategy = "hybrid"
+	StrategyLeetspeak TransformationStrategy = "leetspeak"
+	StrategyMixedCase TransformationStrategy = "mixed-case"
+	StrategySuffix    TransformationStrategy = "suffix"
+	StrategyPrefix    TransformationStrategy = "prefix"
+	StrategyInsert    TransformationStrategy = "insert"
+	StrategyHybrid    TransformationStrategy = "hybrid"
 )
 
 // ComplexityLevel defines the complexity of transformations
@@ -72,20 +72,20 @@ func (wp *WordPattern) Validate() error {
 	if wp.Word == "" {
 		return NewPasswordError("word cannot be empty")
 	}
-	
+
 	if len(wp.Word) < 3 {
 		return NewPasswordError("word must be at least 3 characters long")
 	}
-	
+
 	if len(wp.Word) > 50 {
 		return NewPasswordError("word must be less than 50 characters long")
 	}
-	
+
 	// Check if word contains only letters (basic validation)
 	if !regexp.MustCompile(`^[a-zA-Z]+$`).MatchString(wp.Word) {
 		return NewPasswordError("word must contain only letters")
 	}
-	
+
 	return nil
 }
 
@@ -98,7 +98,7 @@ func (wp *WordPattern) SetStrategy(strategy TransformationStrategy) *WordPattern
 // SetComplexity sets the complexity level
 func (wp *WordPattern) SetComplexity(complexity ComplexityLevel) *WordPattern {
 	wp.Complexity = complexity
-	
+
 	// Adjust parameters based on complexity
 	switch complexity {
 	case ComplexityLow:
@@ -111,7 +111,7 @@ func (wp *WordPattern) SetComplexity(complexity ComplexityLevel) *WordPattern {
 		wp.NumberSuffixLength = 3
 		wp.SymbolCount = 2
 	}
-	
+
 	return wp
 }
 
@@ -144,7 +144,7 @@ func (wp *WordPattern) GetTransformedWord() string {
 // applyLeetspeak applies leetspeak transformations
 func (wp *WordPattern) applyLeetspeak() string {
 	result := make([]rune, 0, len(wp.Word))
-	
+
 	for _, char := range wp.Word {
 		if replacement, exists := wp.LeetSpeakMappings[unicode.ToLower(char)]; exists {
 			// Apply leetspeak based on complexity
@@ -171,14 +171,14 @@ func (wp *WordPattern) applyLeetspeak() string {
 			result = append(result, char)
 		}
 	}
-	
+
 	return string(result)
 }
 
 // applyMixedCase applies mixed case transformations
 func (wp *WordPattern) applyMixedCase() string {
 	result := make([]rune, 0, len(wp.Word))
-	
+
 	for i, char := range wp.Word {
 		switch wp.Complexity {
 		case ComplexityLow:
@@ -204,14 +204,14 @@ func (wp *WordPattern) applyMixedCase() string {
 			}
 		}
 	}
-	
+
 	return string(result)
 }
 
 // applySuffix adds suffix based on complexity
 func (wp *WordPattern) applySuffix() string {
 	base := strings.Title(wp.Word)
-	
+
 	switch wp.Complexity {
 	case ComplexityLow:
 		return base + "1"
@@ -220,14 +220,14 @@ func (wp *WordPattern) applySuffix() string {
 	case ComplexityHigh:
 		return base + "123!"
 	}
-	
+
 	return base
 }
 
 // applyPrefix adds prefix based on complexity
 func (wp *WordPattern) applyPrefix() string {
 	base := strings.Title(wp.Word)
-	
+
 	switch wp.Complexity {
 	case ComplexityLow:
 		return "!" + base
@@ -236,7 +236,7 @@ func (wp *WordPattern) applyPrefix() string {
 	case ComplexityHigh:
 		return "#!" + base + "42"
 	}
-	
+
 	return base
 }
 
@@ -245,13 +245,13 @@ func (wp *WordPattern) applyInsert() string {
 	if len(wp.Word) < 4 {
 		return wp.applySuffix() // Fallback for short words
 	}
-	
+
 	result := make([]rune, 0, len(wp.Word)+3)
 	wordRunes := []rune(wp.Word)
-	
+
 	// Insert character in the middle
 	middle := len(wordRunes) / 2
-	
+
 	for i, char := range wordRunes {
 		if i == 0 {
 			result = append(result, unicode.ToUpper(char))
@@ -268,7 +268,7 @@ func (wp *WordPattern) applyInsert() string {
 			result = append(result, char)
 		}
 	}
-	
+
 	return string(result)
 }
 
@@ -276,7 +276,7 @@ func (wp *WordPattern) applyInsert() string {
 func (wp *WordPattern) applyHybrid() string {
 	// Start with mixed case
 	result := wp.applyMixedCase()
-	
+
 	// Apply some leetspeak
 	tempPattern := &WordPattern{
 		Word:              result,
@@ -284,7 +284,7 @@ func (wp *WordPattern) applyHybrid() string {
 		LeetSpeakMappings: wp.LeetSpeakMappings,
 	}
 	result = tempPattern.applyLeetspeak()
-	
+
 	// Add suffix based on complexity
 	switch wp.Complexity {
 	case ComplexityLow:
@@ -294,6 +294,6 @@ func (wp *WordPattern) applyHybrid() string {
 	case ComplexityHigh:
 		result += "@42!"
 	}
-	
+
 	return result
 }
