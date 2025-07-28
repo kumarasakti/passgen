@@ -1,16 +1,38 @@
 # passgen
 
-A secure, customizable password generator CLI tool written in Go.
+A secure, customizable password generator CLI tool written in Go with clean architecture.
+
+## 🎯 New in v1.1.0: Word-Based Password Generation!
+
+Transform memorable words into secure passwords using intelligent transformation strategies.
+
+```bash
+# Transform a word into a secure password
+passgen word "security"
+# Output: S3cur1ty!42
+
+# Choose transformation strategy
+passgen word "password" --strategy leetspeak
+# Output: p@ssw0rd
+
+# Set complexity level
+passgen word "secret" --complexity high --count 3
+# Generate multiple variations
+```
 
 ## Features
 
-- **Secure Random Generation**: Uses cryptographically secure random number generation
-- **Customizable Character Sets**: Choose from lowercase, uppercase, numbers, and symbols
-- **Advanced Options**: Exclude similar characters, custom character exclusion
-- **Multiple Passwords**: Generate multiple passwords at once
-- **Password Strength Checker**: Analyze password strength and get improvement suggestions
-- **Preset Configurations**: Quick presets for common use cases
-- **Cross-Platform**: Works on Linux, macOS, and Windows
+- **🎯 Word-Based Passwords**: Transform memorable words into secure passwords
+- **🔧 Multiple Transformation Strategies**: Leetspeak, mixed-case, hybrid, prefix/suffix
+- **📊 Complexity Levels**: Low, medium, high complexity transformations
+- **🔐 Secure Random Generation**: Uses cryptographically secure random number generation
+- **🎨 Customizable Character Sets**: Choose from lowercase, uppercase, numbers, and symbols
+- **⚙️ Advanced Options**: Exclude similar characters, custom character exclusion
+- **📦 Multiple Passwords**: Generate multiple passwords at once
+- **🔍 Password Strength Checker**: Analyze password strength and get improvement suggestions
+- **🚀 Preset Configurations**: Quick presets for common use cases
+- **🌍 Cross-Platform**: Works on Linux, macOS, and Windows
+- **🏗️ Clean Architecture**: Maintainable, testable, extensible codebase
 
 ## Installation
 
@@ -119,6 +141,73 @@ If you get "command not found", your Go bin directory is not in PATH. Use Method
 
 ## Usage
 
+### Quick Start
+
+```bash
+# Generate a default password (12 characters, letters and numbers)
+passgen
+
+# Generate a 16-character password with symbols
+passgen -l 16 -s
+
+# Transform a word into a secure password (NEW!)
+passgen word "security"
+# Output: S3cur1ty!42
+
+# Generate 5 passwords at once
+passgen -c 5
+
+# Generate a secure password (all character types)
+passgen --secure
+```
+
+### ⭐ Word-Based Password Generation (NEW in v1.1.0)
+
+Transform memorable words into secure passwords using intelligent transformation strategies:
+
+```bash
+# Basic word transformation
+passgen word "sunshine"
+# Output: Sunsh1n3!42
+
+# Use specific transformation strategies
+passgen word "password" --strategy leetspeak
+# Output: p@55w0rd
+
+passgen word "myhouse" --strategy mixedcase
+# Output: MyHoUsE
+
+passgen word "admin" --strategy suffix
+# Output: admin_789!
+
+# Set complexity levels
+passgen word "secret" --complexity low
+# Output: Secret
+
+passgen word "secret" --complexity medium
+# Output: Secret42
+
+passgen word "secret" --complexity high
+# Output: S3cr3t!78$
+
+# Generate multiple variations
+passgen word "team" --count 5
+# Output: Multiple secure variations of "team"
+```
+
+**Transformation Strategies:**
+- `leetspeak`: Replace letters with numbers/symbols (a→@, e→3, i→1, o→0, s→$)
+- `mixedcase`: Alternate between upper and lower case
+- `suffix`: Add random numbers and symbols at the end
+- `prefix`: Add random numbers and symbols at the beginning
+- `insert`: Insert random characters throughout the word
+- `hybrid`: Combine multiple strategies for maximum security (default)
+
+**Complexity Levels:**
+- `low`: Basic transformation (capitalization only)
+- `medium`: Moderate transformation (some substitutions + numbers)
+- `high`: Complex transformation (full substitutions + symbols + numbers)
+
 ### Basic Usage
 
 ```bash
@@ -180,6 +269,8 @@ passgen check "mypassword123"
 
 ## Command Line Options
 
+### Standard Password Generation
+
 | Flag | Short | Description | Default |
 |------|-------|-------------|---------|
 | `--length` | `-l` | Password length | 12 |
@@ -195,6 +286,26 @@ passgen check "mypassword123"
 | `--alphanumeric` | `-a` | Generate alphanumeric password | false |
 | `--help` | `-h` | Show help message | |
 | `--version` | `-v` | Show version | |
+
+### Word-Based Password Generation (NEW!)
+
+```bash
+passgen word <word> [flags]
+```
+
+| Flag | Short | Description | Default | Options |
+|------|-------|-------------|---------|---------|
+| `--strategy` | `-s` | Transformation strategy | hybrid | leetspeak, mixedcase, suffix, prefix, insert, hybrid |
+| `--complexity` | `-x` | Complexity level | medium | low, medium, high |
+| `--count` | `-c` | Number of variations to generate | 1 | |
+
+**Strategy Details:**
+- **leetspeak**: `security` → `s3cur1ty` (replaces a→@, e→3, i→1, o→0, s→$)
+- **mixedcase**: `security` → `SeCuRiTy` (alternates case)
+- **suffix**: `security` → `security789!` (adds random suffix)
+- **prefix**: `security` → `42!security` (adds random prefix)  
+- **insert**: `security` → `sec7ur!ity` (inserts random characters)
+- **hybrid**: `security` → `S3cur1ty!42` (combines strategies)
 
 ## Examples
 
@@ -377,6 +488,37 @@ This tool uses Go's `crypto/rand` package for cryptographically secure random nu
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v1.1.0 (Latest) 🎉
+
+**New Features:**
+- **🎯 Word-Based Password Generation**: Transform memorable words into secure passwords
+  - 6 transformation strategies: leetspeak, mixedcase, suffix, prefix, insert, hybrid
+  - 3 complexity levels: low, medium, high
+  - Generate multiple variations of the same word
+  - Intelligent pattern detection and security optimization
+
+**Improvements:**
+- **🏗️ Clean Architecture**: Refactored codebase with Domain-Driven Design principles
+- **🎨 Enhanced UI**: More prominent password display with better visual formatting
+- **🧪 Comprehensive Testing**: 21 test cases covering all architectural layers
+- **🔧 Code Quality**: Fixed linting issues, updated deprecated APIs
+- **⚡ CI/CD Optimization**: Enhanced GitHub Actions with better caching and security scanning
+
+**Examples:**
+```bash
+# Transform words into secure passwords
+passgen word "sunshine" --strategy hybrid --complexity high
+# Output: Sunsh1n3!42
+
+passgen word "coffee" --strategy leetspeak
+# Output: c0ff33
+
+passgen word "team" --count 3 --complexity medium
+# Generate 3 variations: Team42, T3am78, Te@m91
+```
+
+**Breaking Changes:** None - fully backward compatible
 
 ### v1.0.0
 - Initial release
