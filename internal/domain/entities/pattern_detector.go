@@ -84,7 +84,7 @@ func (ppd *PasswordPatternDetector) checkRepeating(password string) []PasswordPa
 	var patterns []PasswordPattern
 
 	// Check for 3+ repeating characters
-	if matched, _ := regexp.MatchString(`(.)\1{2,}`, password); matched {
+	if matched, _ := regexp.MatchString(`(.)\\1{2,}`, password); matched {
 		patterns = append(patterns, PasswordPattern{
 			Type:        "repeating_chars",
 			Description: "Contains repeating characters (e.g., aaa, 111)",

@@ -74,44 +74,6 @@ func (f *Formatter) FormatPasswordStrengthCheck(result services.StrengthCheckRes
 	return result.FormattedResult
 }
 
-// getLengthStatus returns status and comment for password length
-func (f *Formatter) getLengthStatus(length int) (string, string) {
-	status := "✅"
-	comment := "(Good!)"
-
-	if length < 8 {
-		status = "❌"
-		comment = "(Too Short)"
-	} else if length < 12 {
-		status = "⚠️ "
-		comment = "(Could be longer)"
-	} else if length >= 16 {
-		comment = "(Excellent!)"
-	}
-
-	return status, comment
-}
-
-// getCharacterSetStatus returns status for character set diversity
-func (f *Formatter) getCharacterSetStatus(charTypeCount int) string {
-	if charTypeCount < 2 {
-		return "❌"
-	} else if charTypeCount < 3 {
-		return "⚠️ "
-	}
-	return "✅"
-}
-
-// getEntropyStatus returns status for entropy level
-func (f *Formatter) getEntropyStatus(entropy float64) string {
-	if entropy < 25 {
-		return "❌"
-	} else if entropy < 40 {
-		return "⚠️ "
-	}
-	return "✅"
-}
-
 // FormatWordPasswordGeneration formats word-based password generation results
 func (f *Formatter) FormatWordPasswordGeneration(resp application.GenerateWordPasswordResponse) string {
 	var output strings.Builder
@@ -161,20 +123,4 @@ func (f *Formatter) FormatWordPasswordGeneration(resp application.GenerateWordPa
 	}
 
 	return output.String()
-}
-
-// getLengthDescription returns a description for password length
-func (f *Formatter) getLengthDescription(length int) string {
-	switch {
-	case length < 8:
-		return "Too Short"
-	case length < 12:
-		return "Acceptable"
-	case length < 16:
-		return "Good"
-	case length < 20:
-		return "Excellent"
-	default:
-		return "Outstanding"
-	}
 }

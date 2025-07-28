@@ -210,7 +210,7 @@ func (wp *WordPattern) applyMixedCase() string {
 
 // applySuffix adds suffix based on complexity
 func (wp *WordPattern) applySuffix() string {
-	base := strings.Title(wp.Word)
+	base := wp.capitalizeFirst(wp.Word)
 
 	switch wp.Complexity {
 	case ComplexityLow:
@@ -226,7 +226,7 @@ func (wp *WordPattern) applySuffix() string {
 
 // applyPrefix adds prefix based on complexity
 func (wp *WordPattern) applyPrefix() string {
-	base := strings.Title(wp.Word)
+	base := wp.capitalizeFirst(wp.Word)
 
 	switch wp.Complexity {
 	case ComplexityLow:
@@ -296,4 +296,15 @@ func (wp *WordPattern) applyHybrid() string {
 	}
 
 	return result
+}
+
+// capitalizeFirst capitalizes the first letter of a string
+func (wp *WordPattern) capitalizeFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	if len(s) == 1 {
+		return strings.ToUpper(s)
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }
