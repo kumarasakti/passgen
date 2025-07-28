@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release'
+        required: true
+        default: 'v1.1.0'
 
 permissions:
   contents: write
@@ -17,17 +23,25 @@ jobs:
         fetch-depth: 0
     
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: 1.21
+        go-version: '1.21'
     
     - name: Cache Go modules
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
+
+    - name: Cache build artifacts
+      uses: actions/cache@v4
+      with:
+        path: build/
+        key: ${{ runner.os }}-build-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-build-
     
     - name: Install dependencies
       run: go mod download
@@ -45,13 +59,40 @@ jobs:
     - name: Create release archives
       run: make release VERSION=${{ steps.version.outputs.VERSION }}
     
+    - name: Test release binaries
+      run: |
+        # Test a few key binaries to ensure they work
+        ./dist/passgen-linux-amd64 --version
+        ./dist/passgen-linux-amd64 word "test" --strategy hybrid
+        ./dist/passgen-darwin-amd64 --version || echo "macOS binary test skipped on Linux"
+    
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.version.outputs.VERSION }}
-        name: ${{ steps.version.outputs.VERSION }}
+        name: Release ${{ steps.version.outputs.VERSION }}
         draft: false
         prerelease: false
+        generate_release_notes: true
+        body: |
+          ## What's New in ${{ steps.version.outputs.VERSION }}
+          
+          🎯 **Word-Based Password Generation** - Transform memorable words into secure passwords!
+          
+          ### New Features:
+          - `passgen word "yourword"` - Generate passwords based on words
+          - Multiple transformation strategies: leetspeak, mixed-case, hybrid, etc.
+          - Complexity levels: low, medium, high
+          - Generate multiple variations with `--count`
+          
+          ### Improvements:
+          - Enhanced password display with prominent boxes
+          - Cleaner output focusing on the password first
+          - Maintained sarcastic security comments for fun
+          
+          ### Download:
+          Choose the appropriate binary for your platform from the assets below.
+          
         files: |
           dist/releases/*
         token: ${{ secrets.GITHUB_TOKEN }} 

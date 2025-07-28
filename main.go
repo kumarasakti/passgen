@@ -8,7 +8,7 @@ import (
 )
 
 // Version can be overridden at build time using -ldflags "-X main.Version=x.y.z"
-var Version = "v1.0.5"
+var Version = "v1.1.0"
 
 func main() {
 	handler := cli.NewHandler()
