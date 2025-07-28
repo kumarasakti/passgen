@@ -48,6 +48,12 @@ coverage.html
 # Dependency directories
 vendor/
 
+# Backup directories
+backup/
+backups/
+*.backup
+*.old
+
 # Environment variables
 .env
 .env.local
