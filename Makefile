@@ -2,8 +2,19 @@
 
 # Variables
 BINARY_NAME=passgen
-# Dynamic versioning based on git tags
-VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+# Enhanced version detection with commit hash for dirty builds
+define get_version
+$(shell \
+	if git diff-index --quiet HEAD -- 2>/dev/null; then \
+		git describe --tags --exact-match 2>/dev/null || git describe --tags --always --match='v*' 2>/dev/null || echo "dev"; \
+	else \
+		base_version=$$(git describe --tags --abbrev=0 --match='v*' 2>/dev/null || echo "v0.0.0"); \
+		commit_hash=$$(git rev-parse --short HEAD 2>/dev/null || echo "unknown"); \
+		echo "$$base_version-dirty-g$$commit_hash"; \
+	fi \
+)
+endef
+VERSION?=$(call get_version)
 BUILD_DIR=build
 DIST_DIR=dist
 
