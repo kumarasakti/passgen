@@ -54,7 +54,10 @@ jobs:
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
     
     - name: Build for all platforms
-      run: make build-all VERSION=${{ steps.version.outputs.VERSION }}
+      run: |
+        echo "🔍 Verifying CGO_ENABLED setting for release builds:"
+        echo "CGO_ENABLED=$CGO_ENABLED"
+        make build-all VERSION=${{ steps.version.outputs.VERSION }}
       env:
         CGO_ENABLED: 0
     

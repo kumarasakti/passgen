@@ -314,63 +314,35 @@ passgen word <word> [flags]
 ```bash
 # Default password (14 characters, uppercase, lowercase, symbols)
 $ passgen
-🎉 Password Generated Successfully! 🎉
-
-Password: -PUZ:@)x$DSloj
-
-📊 Password Analysis:
-✅ Length: 14 characters (Good!)
-✅ Character Sets: Lowercase, Uppercase, Symbols
-✅ Entropy: 88.0 bits (Very Strong!)
-✅ Strength: Very Strong 💪
-
-🔒 Security Assessment:
-• This password would take approximately 4892016 years to crack with modern hardware
-• Contains 3 different character types for excellent complexity
-• Exceeds security standards for high-value accounts
-
-Someone's taking this security thing seriously! 🌟
+� Your Password:
+┌────────────────┐
+│ U$DD$fico*Q,.Y │
+└────────────────┘
+📊 Length: 14 | Character types: Lowercase, Uppercase, Symbols | Strength: Very Strong 💪
+🔒 Security info: 88.0 bits entropy, cracks in 4892016 years
+💬 Someone's taking this security thing seriously! 🌟
 
 # Secure password with all character types (gets the ice cold message!)
 $ passgen --secure -l 20
-🎉 Password Generated Successfully! 🎉
-
-Password: =;1.7y$A]RqH8a7):s&C
-
-📊 Password Analysis:
-✅ Length: 20 characters (Excellent!)
-✅ Character Sets: Lowercase, Uppercase, Numbers, Symbols
-✅ Entropy: 129.2 bits (Extremely Strong!)
-✅ Strength: Extremely Strong 🔥
-
-🔒 Security Assessment:
-• This password would take approximately 1.2e+19 years to crack with modern hardware
-• Contains 4 different character types for maximum complexity
-• Quantum-resistant for the foreseeable future!
-
-Brr, that's ice cold security! Even hackers are shivering! 🥶
+� Your Password:
+┌──────────────────────┐
+│ 7hRQj<=1YS64M-ECL3iM │
+└──────────────────────┘
+📊 Length: 20 | Character types: Lowercase, Uppercase, Numbers, Symbols | Strength: Extremely Strong 🔥
+🔒 Security info: 129.2 bits entropy, cracks in 1.2e+19 years
+💬 Brr, that's ice cold security! Even hackers are shivering! 🥶
 
 # Medium strength password (with sarcastic feedback)
 $ passgen -l 8
-✨ Password Generated! ✨
-
-Password: gz*yK#<&
-
-📊 Password Analysis:
-⚠️  Length: 8 characters (Could be longer)
-✅ Character Sets: Lowercase, Uppercase, Symbols
-✅ Entropy: 50.3 bits (Medium!)
-✅ Strength: Medium ⚡
-
-🔒 Security Assessment:
-• This password would take approximately 11.4 minutes to crack with modern hardware
-• Contains 3 different character types for excellent complexity
-• Adequate for most general purposes
-
-💡 Tips for improvement:
-• Consider using 12+ characters for better security
-
-Well, it's... adequate. I guess that's something! 👍
+🎯 Your Password:
+┌──────────┐
+│ rM!?M-k_ │
+└──────────┘
+📊 Length: 8 | Character types: Lowercase, Uppercase, Symbols | Strength: Medium ⚡
+🔒 Security info: 50.3 bits entropy, cracks in 11.4 minutes
+💡 Suggestions:
+   • Consider using 12+ characters for better security
+💬 Well, it's... adequate. I guess that's something! 👍
 ```
 
 ### Advanced Usage
@@ -378,45 +350,21 @@ Well, it's... adequate. I guess that's something! 👍
 ```bash
 # Generate multiple passwords
 $ passgen -c 2 -l 10
-🎉 Password Generated Successfully! 🎉
-
-Password: CIMc|OVmzv
-
-📊 Password Analysis:
-✅ Length: 10 characters (Good!)
-✅ Character Sets: Lowercase, Uppercase, Symbols
-✅ Entropy: 62.9 bits (Strong!)
-✅ Strength: Strong 💯
-
-🔒 Security Assessment:
-• This password would take approximately 1.2 years to crack with modern hardware
-• Contains 3 different character types for excellent complexity
-• Great for securing important accounts
-
-Not bad, you actually read the security guidelines! 🎯
-
-==================================================
-
-🎉 Password Generated Successfully! 🎉
-
-Password: oXEduV)%|K
-
-📊 Password Analysis:
-✅ Length: 10 characters (Good!)
-✅ Character Sets: Lowercase, Uppercase, Symbols
-✅ Entropy: 62.9 bits (Strong!)
-✅ Strength: Strong 💯
-
-🔒 Security Assessment:
-• This password would take approximately 1.2 years to crack with modern hardware
-• Contains 3 different character types for excellent complexity
-• Great for securing important accounts
-
-Not bad, you actually read the security guidelines! 🎯
+� Password 1:
+┌────────────┐
+│ Cm=tnmnB#w │
+└────────────┘
+📊 Length: 10 | Character types: Lowercase, Uppercase, Symbols | Strength: Strong 💯
+────────────────────────────────────────────────────────────
+🎯 Password 2:
+┌────────────┐
+│ :<S<VZCalp │
+└────────────┘
+📊 Length: 10 | Character types: Lowercase, Uppercase, Symbols | Strength: Strong 💯
 
 # Check version
 $ passgen --version
-passgen version v1.0.3
+passgen version v1.1.0
 ```
 
 ## Development
