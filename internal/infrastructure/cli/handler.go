@@ -50,6 +50,9 @@ func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 	rootCmd.AddCommand(h.createCheckCommand())
 	rootCmd.AddCommand(h.createPresetCommand())
 	rootCmd.AddCommand(h.createWordCommand())
+	
+	// Add store commands (Phase 1A: Foundation)
+	rootCmd.AddCommand(h.createStoreCommands())
 
 	return rootCmd
 }
@@ -262,4 +265,12 @@ Examples:
 	wordCmd.Flags().IntP("count", "c", 1, "Number of password variations to generate")
 
 	return wordCmd
+}
+
+// createStoreCommands creates the store command tree (Phase 1A: Foundation)
+func (h *Handler) createStoreCommands() *cobra.Command {
+	// For Phase 1A, we create a mock store handler to demonstrate the enhanced card display
+	// This will be replaced with real implementations in Phase 1B
+	storeHandler := NewStoreHandler(nil, nil) // nil repos for Phase 1A demo
+	return storeHandler.CreateStoreCommands()
 }
