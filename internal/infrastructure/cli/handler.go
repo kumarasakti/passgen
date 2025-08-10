@@ -6,6 +6,7 @@ import (
 
 	"github.com/kumarasakti/passgen/internal/application"
 	"github.com/kumarasakti/passgen/internal/domain/entities"
+	"github.com/kumarasakti/passgen/internal/infrastructure/display"
 	"github.com/spf13/cobra"
 )
 
@@ -267,10 +268,27 @@ Examples:
 	return wordCmd
 }
 
-// createStoreCommands creates the store command tree (Phase 1A: Foundation)
+// createStoreCommands creates the store command tree (Phase 1B: Enhanced with GPG and Git)
 func (h *Handler) createStoreCommands() *cobra.Command {
-	// For Phase 1A, we create a mock store handler to demonstrate the enhanced card display
-	// This will be replaced with real implementations in Phase 1B
-	storeHandler := NewStoreHandler(nil, nil) // nil repos for Phase 1A demo
-	return storeHandler.CreateStoreCommands()
+	// Create card displayer
+	displayer := display.NewCardDisplayer()
+	
+	// For Phase 1A compatibility, create with nil repos (demo mode)
+	storeHandler := NewStoreHandler(nil, nil)
+	
+	// Create Phase 1B store initialization handler  
+	storeInitHandler := NewStoreInitHandler(displayer)
+	
+	// Get the main store command from the original handler (Phase 1A commands)
+	storeCmd := storeHandler.CreateStoreCommands()
+	
+	// Add Phase 1B specific commands (avoiding duplicates)
+	storeCmd.AddCommand(storeInitHandler.createSetupGPGCommand())
+	storeCmd.AddCommand(storeInitHandler.createRemoteCommand())
+	storeCmd.AddCommand(storeInitHandler.createInfoCommand())
+	
+	// Note: init and sync commands from Phase 1B replace the demo ones from Phase 1A
+	// We keep the Phase 1A versions for now to maintain backward compatibility
+	
+	return storeCmd
 }
