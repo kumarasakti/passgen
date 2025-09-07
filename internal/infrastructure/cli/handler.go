@@ -58,14 +58,14 @@ func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 
 	// Add store commands (Phase 1A: Foundation)
 	rootCmd.AddCommand(h.createStoreCommands())
-	
+
 	// Add storage backend commands (Phase 2A: Backend Management)
 	rootCmd.AddCommand(NewStorageCommand())
 
 	return rootCmd
 }
 
-// createBanner creates an Echo framework-style banner for passgen
+// createBanner creates banner for passgen
 func (h *Handler) createBanner(version string) string {
 	return fmt.Sprintf(`
   ____   _    ____ ____   ____ _____ _   _ 
@@ -78,7 +78,7 @@ func (h *Handler) createBanner(version string) string {
   🚀 High performance, simple commands, secure storage
 
 passgen is a command-line tool for generating secure passwords with
-features including GPG encryption and Git collaboration.`, version)
+safe storage and management features.`, version)
 }
 
 // HandleGeneratePassword handles the main password generation
