@@ -54,20 +54,20 @@ func (g *GPGService) Encrypt(data []byte, recipientKeyID string) ([]byte, error)
 	if recipientKeyID == "" {
 		recipientKeyID = g.keyID
 	}
-	
+
 	cmd := exec.Command("gpg", "--armor", "--encrypt", "--recipient", recipientKeyID, "--trust-model", "always")
 	cmd.Stdin = bytes.NewReader(data)
-	
+
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	
+
 	err := cmd.Run()
 	if err != nil {
 		return nil, fmt.Errorf("GPG encryption failed: %s - %w", stderr.String(), err)
 	}
-	
+
 	return out.Bytes(), nil
 }
 
@@ -75,17 +75,17 @@ func (g *GPGService) Encrypt(data []byte, recipientKeyID string) ([]byte, error)
 func (g *GPGService) Decrypt(encryptedData []byte) ([]byte, error) {
 	cmd := exec.Command("gpg", "--quiet", "--batch", "--decrypt")
 	cmd.Stdin = bytes.NewReader(encryptedData)
-	
+
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	
+
 	err := cmd.Run()
 	if err != nil {
 		return nil, fmt.Errorf("GPG decryption failed: %s - %w", stderr.String(), err)
 	}
-	
+
 	return out.Bytes(), nil
 }
 
@@ -93,17 +93,17 @@ func (g *GPGService) Decrypt(encryptedData []byte) ([]byte, error) {
 func (g *GPGService) Sign(data []byte) ([]byte, error) {
 	cmd := exec.Command("gpg", "--armor", "--detach-sign", "--local-user", g.keyID)
 	cmd.Stdin = bytes.NewReader(data)
-	
+
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	
+
 	err := cmd.Run()
 	if err != nil {
 		return nil, fmt.Errorf("GPG signing failed: %s - %w", stderr.String(), err)
 	}
-	
+
 	return out.Bytes(), nil
 }
 
@@ -111,21 +111,21 @@ func (g *GPGService) Sign(data []byte) ([]byte, error) {
 func (g *GPGService) VerifySignature(data, signature []byte) error {
 	// Write signature to temporary buffer for verification
 	cmd := exec.Command("gpg", "--verify", "-", "-")
-	
+
 	// Create combined input: signature then data
 	var input bytes.Buffer
 	input.Write(signature)
 	input.Write(data)
 	cmd.Stdin = &input
-	
+
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
-	
+
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("signature verification failed: %s - %w", stderr.String(), err)
 	}
-	
+
 	return nil
 }
 
@@ -146,7 +146,7 @@ func (g *GPGService) GetKeyFingerprint(keyID string) (string, error) {
 			}
 		}
 	}
-	
+
 	return "", fmt.Errorf("fingerprint not found for key %s", keyID)
 }
 
@@ -154,43 +154,43 @@ func (g *GPGService) GetKeyFingerprint(keyID string) (string, error) {
 func parseGPGKeys(output string) []GPGKey {
 	var keys []GPGKey
 	lines := strings.Split(output, "\n")
-	
+
 	var currentKey *GPGKey
-	
+
 	for _, line := range lines {
 		parts := strings.Split(line, ":")
 		if len(parts) < 2 {
 			continue
 		}
-		
+
 		switch parts[0] {
 		case "sec":
 			// Secret key line: sec:u:4096:1:KEYID:CREATED:::u:::scESCA:::+::0:
 			if len(parts) >= 5 {
 				currentKey = &GPGKey{
+					ID:        parts[4], // Key ID is in position 4
 					KeyType:   parts[3],
 					KeyLength: parseKeyLength(parts[2]),
 				}
-			}
-		case "uid":
-			// User ID line: uid:u::::CREATED::KEYID::USERID::::::::::0:
-			if currentKey != nil && len(parts) >= 10 && parts[9] != "" {
-				currentKey.UserID = parts[9]
-				currentKey.ID = extractKeyID(currentKey.UserID)
 			}
 		case "fpr":
 			// Fingerprint line: fpr:::::::::FINGERPRINT:
 			if currentKey != nil && len(parts) >= 10 && parts[9] != "" {
 				currentKey.Fingerprint = parts[9]
-				// Only add key if we have both UserID and Fingerprint
-				if currentKey.UserID != "" {
+			}
+		case "uid":
+			// User ID line: uid:u::::CREATED::KEYID::USERID::::::::::0:
+			if currentKey != nil && len(parts) >= 10 && parts[9] != "" {
+				currentKey.UserID = parts[9]
+				// Add key when we have all required fields
+				if currentKey.ID != "" && currentKey.Fingerprint != "" {
 					keys = append(keys, *currentKey)
 				}
 				currentKey = nil
 			}
 		}
 	}
-	
+
 	return keys
 }
 
@@ -212,12 +212,12 @@ func extractKeyID(userID string) string {
 			return userID[start:end]
 		}
 	}
-	
+
 	// Fallback to first word
 	parts := strings.Fields(userID)
 	if len(parts) > 0 {
 		return parts[0]
 	}
-	
+
 	return userID
 }

@@ -13,44 +13,89 @@ import (
 	"github.com/kumarasakti/passgen/internal/infrastructure/gpg"
 )
 
-// EncryptedStorage handles encrypted password storage with Git backing
+// EncryptedStorage handles encrypted password storage with optional Git backing
 type EncryptedStorage struct {
 	storePath   string
 	gpgService  *gpg.GPGService
 	gitService  *git.GitService
 	initialized bool
+	localOnly   bool
 }
 
 // NewEncryptedStorage creates a new encrypted storage instance
 func NewEncryptedStorage(storePath string, gpgService *gpg.GPGService) *EncryptedStorage {
 	gitService := git.NewGitService(storePath)
-	
+
 	return &EncryptedStorage{
 		storePath:  storePath,
 		gpgService: gpgService,
 		gitService: gitService,
+		localOnly:  false, // Default to Git backing
+	}
+}
+
+// NewLocalOnlyEncryptedStorage creates a new local-only encrypted storage instance
+func NewLocalOnlyEncryptedStorage(storePath string, gpgService *gpg.GPGService) *EncryptedStorage {
+	return &EncryptedStorage{
+		storePath:  storePath,
+		gpgService: gpgService,
+		gitService: nil,
+		localOnly:  true,
 	}
 }
 
 // StoredPasswordEntry represents the stored format of a password entry
 type StoredPasswordEntry struct {
-	Service         string                     `json:"service"`
-	Username        string                     `json:"username,omitempty"`
-	Password        string                     `json:"password"`
-	URL             string                     `json:"url,omitempty"`
-	Notes           string                     `json:"notes,omitempty"`
-	Metadata        map[string]string          `json:"metadata"`
-	CreatedAt       time.Time                  `json:"created_at"`
-	UpdatedAt       time.Time                  `json:"updated_at"`
-	GeneratedBy     string                     `json:"generated_by"`
+	Service         string                       `json:"service"`
+	Username        string                       `json:"username,omitempty"`
+	Password        string                       `json:"password"`
+	URL             string                       `json:"url,omitempty"`
+	Notes           string                       `json:"notes,omitempty"`
+	Metadata        map[string]string            `json:"metadata"`
+	CreatedAt       time.Time                    `json:"created_at"`
+	UpdatedAt       time.Time                    `json:"updated_at"`
+	GeneratedBy     string                       `json:"generated_by"`
 	AutoRotation    *entities.AutoRotationConfig `json:"auto_rotation,omitempty"`
 	RotationHistory []entities.RotationRecord    `json:"rotation_history,omitempty"`
 }
 
 // InitializeStore initializes a new password store
 func (es *EncryptedStorage) InitializeStore(storeName string) error {
+	if es.localOnly {
+		return es.initializeLocalStore(storeName)
+	}
+	return es.initializeGitStore(storeName)
+}
+
+// initializeLocalStore initializes a local-only password store
+func (es *EncryptedStorage) initializeLocalStore(storeName string) error {
 	storeDir := filepath.Join(es.storePath, storeName)
-	
+
+	// Create store directory
+	if err := os.MkdirAll(storeDir, 0700); err != nil {
+		return fmt.Errorf("failed to create store directory: %w", err)
+	}
+
+	// Create store metadata
+	storeMetadata := entities.PasswordStore{
+		Name:      storeName,
+		LocalPath: storeDir,
+		CreatedAt: time.Now(),
+	}
+
+	metadataPath := filepath.Join(storeDir, ".passgen-store")
+	if err := es.saveStoreMetadata(metadataPath, storeMetadata); err != nil {
+		return fmt.Errorf("failed to save store metadata: %w", err)
+	}
+
+	es.initialized = true
+	return nil
+}
+
+// initializeGitStore initializes a password store with Git backing
+func (es *EncryptedStorage) initializeGitStore(storeName string) error {
+	storeDir := filepath.Join(es.storePath, storeName)
+
 	// Create store directory
 	if err := os.MkdirAll(storeDir, 0700); err != nil {
 		return fmt.Errorf("failed to create store directory: %w", err)
@@ -89,6 +134,11 @@ func (es *EncryptedStorage) InitializeStore(storeName string) error {
 
 	es.initialized = true
 	return nil
+}
+
+// SetInitialized sets the initialized flag for existing stores
+func (es *EncryptedStorage) SetInitialized(initialized bool) {
+	es.initialized = initialized
 }
 
 // ConnectRemote connects the store to a remote Git repository
@@ -140,19 +190,21 @@ func (es *EncryptedStorage) SavePassword(entry entities.PasswordEntry) error {
 	// Save to file
 	fileName := es.sanitizeFileName(entry.Service) + ".gpg"
 	filePath := filepath.Join(es.storePath, fileName)
-	
+
 	if err := os.WriteFile(filePath, encryptedData, 0600); err != nil {
 		return fmt.Errorf("failed to write encrypted file: %w", err)
 	}
 
-	// Add to git and commit
-	if err := es.gitService.AddFiles([]string{fileName}); err != nil {
-		return fmt.Errorf("failed to add file to git: %w", err)
-	}
+	// Add to git and commit (only if not local-only)
+	if !es.localOnly && es.gitService != nil {
+		if err := es.gitService.AddFiles([]string{fileName}); err != nil {
+			return fmt.Errorf("failed to add file to git: %w", err)
+		}
 
-	commitMsg := fmt.Sprintf("Add password entry: %s", entry.Service)
-	if err := es.gitService.Commit(commitMsg); err != nil {
-		return fmt.Errorf("failed to commit password entry: %w", err)
+		commitMsg := fmt.Sprintf("Add password entry: %s", entry.Service)
+		if err := es.gitService.Commit(commitMsg); err != nil {
+			return fmt.Errorf("failed to commit password entry: %w", err)
+		}
 	}
 
 	return nil
@@ -356,17 +408,17 @@ func (es *EncryptedStorage) sanitizeFileName(name string) string {
 	// Replace unsafe characters with underscores
 	unsafe := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|", " "}
 	result := name
-	
+
 	for _, char := range unsafe {
 		result = strings.ReplaceAll(result, char, "_")
 	}
-	
+
 	return result
 }
 
 // unsanitizeFileName converts a filename back to original name (basic implementation)
 func (es *EncryptedStorage) unsanitizeFileName(filename string) string {
-	// This is a basic implementation - in real use, you might want to store 
+	// This is a basic implementation - in real use, you might want to store
 	// the original name in metadata to avoid this conversion
 	return strings.ReplaceAll(filename, "_", " ")
 }

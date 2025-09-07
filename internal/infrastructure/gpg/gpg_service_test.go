@@ -13,14 +13,14 @@ func TestGPGService_ListKeys(t *testing.T) {
 
 	service := NewGPGService("")
 	keys, err := service.ListKeys()
-	
+
 	// This test will only pass if there are GPG keys available
 	// In a CI environment, this might fail, so we just check the method doesn't crash
 	if err != nil {
 		t.Logf("No GPG keys available: %v", err)
 		return
 	}
-	
+
 	t.Logf("Found %d GPG keys", len(keys))
 	for _, key := range keys {
 		t.Logf("Key: %s - %s", key.ID, key.UserID)
@@ -33,7 +33,7 @@ func TestGPGService_ValidateKey(t *testing.T) {
 	}
 
 	service := NewGPGService("")
-	
+
 	// Test with a non-existent key
 	err := service.ValidateKey("nonexistent")
 	if err == nil {
@@ -51,13 +51,13 @@ fpr:::::::::DEF456ABC123DEF456ABC123DEF456ABC123DEF456ABC123:
 `
 
 	keys := parseGPGKeys(testOutput)
-	
+
 	if len(keys) != 1 {
 		t.Errorf("Expected 1 key, got %d", len(keys))
 		t.Logf("Parsed keys: %+v", keys)
 		return
 	}
-	
+
 	key := keys[0]
 	if key.UserID != "Test User <test@example.com>" {
 		t.Errorf("Expected UserID 'Test User <test@example.com>', got '%s'", key.UserID)
@@ -77,7 +77,7 @@ func TestParseKeyLength(t *testing.T) {
 		{"1024", 1024},
 		{"invalid", 0},
 	}
-	
+
 	for _, test := range tests {
 		result := parseKeyLength(test.input)
 		if result != test.expected {
@@ -96,7 +96,7 @@ func TestExtractKeyID(t *testing.T) {
 		{"Simple Name", "Simple"},
 		{"", ""},
 	}
-	
+
 	for _, test := range tests {
 		result := extractKeyID(test.input)
 		if result != test.expected {

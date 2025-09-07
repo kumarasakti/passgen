@@ -7,6 +7,7 @@ import (
 	"github.com/kumarasakti/passgen/internal/application"
 	"github.com/kumarasakti/passgen/internal/domain/entities"
 	"github.com/kumarasakti/passgen/internal/infrastructure/display"
+	"github.com/kumarasakti/passgen/internal/infrastructure/repositories"
 	"github.com/spf13/cobra"
 )
 
@@ -39,10 +40,13 @@ func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "passgen",
 		Short:   "Generate secure passwords",
-		Long:    "passgen is a command-line tool for generating secure passwords.",
+		Long:    h.createBanner(version),
 		Version: version,
 		Run:     h.HandleGeneratePassword,
 	}
+
+	// Set custom version template with banner
+	rootCmd.SetVersionTemplate(h.createBanner(version) + "\n")
 
 	// Add flags
 	h.addFlags(rootCmd)
@@ -51,11 +55,30 @@ func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 	rootCmd.AddCommand(h.createCheckCommand())
 	rootCmd.AddCommand(h.createPresetCommand())
 	rootCmd.AddCommand(h.createWordCommand())
-	
+
 	// Add store commands (Phase 1A: Foundation)
 	rootCmd.AddCommand(h.createStoreCommands())
+	
+	// Add storage backend commands (Phase 2A: Backend Management)
+	rootCmd.AddCommand(NewStorageCommand())
 
 	return rootCmd
+}
+
+// createBanner creates an Echo framework-style banner for passgen
+func (h *Handler) createBanner(version string) string {
+	return fmt.Sprintf(`
+  ____   _    ____ ____   ____ _____ _   _ 
+ |  _ \ / \  / ___/ ___| / ___| ____| \ | |
+ | |_) / _ \ \___ \___ \| |  _|  _| |  \| |
+ |  __/ ___ \ ___) |__) | |_| | |___| |\  |
+ |_| /_/   \_\____/____/ \____|_____|_| \_|
+
+  🔒 Secure Password Generation & Management %s
+  🚀 High performance, simple commands, secure storage
+
+passgen is a command-line tool for generating secure passwords with
+features including GPG encryption and Git collaboration.`, version)
 }
 
 // HandleGeneratePassword handles the main password generation
@@ -272,23 +295,30 @@ Examples:
 func (h *Handler) createStoreCommands() *cobra.Command {
 	// Create card displayer
 	displayer := display.NewCardDisplayer()
-	
-	// For Phase 1A compatibility, create with nil repos (demo mode)
-	storeHandler := NewStoreHandler(nil, nil)
-	
-	// Create Phase 1B store initialization handler  
+
+	// Create Phase 1B encrypted repository (shared between handlers)
+	encryptedRepo := repositories.NewEncryptedPasswordStoreRepository()
+
+	// Create store handler with encrypted repository
+	storeHandler := NewStoreHandler(encryptedRepo, nil)
+
+	// Create Phase 1B store initialization handler with shared repository
 	storeInitHandler := NewStoreInitHandler(displayer)
-	
-	// Get the main store command from the original handler (Phase 1A commands)
-	storeCmd := storeHandler.CreateStoreCommands()
-	
-	// Add Phase 1B specific commands (avoiding duplicates)
-	storeCmd.AddCommand(storeInitHandler.createSetupGPGCommand())
-	storeCmd.AddCommand(storeInitHandler.createRemoteCommand())
-	storeCmd.AddCommand(storeInitHandler.createInfoCommand())
-	
-	// Note: init and sync commands from Phase 1B replace the demo ones from Phase 1A
-	// We keep the Phase 1A versions for now to maintain backward compatibility
-	
+	storeInitHandler.repo = encryptedRepo // Share the same repository instance
+
+	// Create the main store command structure from Phase 1B handler
+	storeCmd := storeInitHandler.CreateCommands()
+
+	// Add Phase 1A commands that now use Phase 1B encrypted repository
+	storeCmd.AddCommand(storeHandler.createListCommand())
+	storeCmd.AddCommand(storeHandler.createAddCommand())
+	storeCmd.AddCommand(storeHandler.createGetCommand())
+	storeCmd.AddCommand(storeHandler.createListPasswordsCommand())
+	storeCmd.AddCommand(storeHandler.createRemoveCommand())
+	storeCmd.AddCommand(storeHandler.createRotationCommands())
+
+	// Note: Phase 1B commands (init, clone, sync, setup-gpg, remote, info) are from storeInitHandler
+	// Phase 1A commands (list, add, get, remove, rotation) now use encrypted repository from Phase 1B
+
 	return storeCmd
 }

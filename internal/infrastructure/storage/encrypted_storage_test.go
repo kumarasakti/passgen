@@ -68,7 +68,7 @@ func TestEncryptedStorage_InitializeStore(t *testing.T) {
 
 	// Test initialization
 	err = storage.InitializeStore("test-store")
-	
+
 	// Note: This test will fail in CI without Git and GPG setup
 	// In a real implementation, you'd mock these dependencies
 	if err != nil {

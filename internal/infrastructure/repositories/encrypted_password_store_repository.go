@@ -6,6 +6,7 @@ import (
 
 	"github.com/kumarasakti/passgen/internal/domain/entities"
 	"github.com/kumarasakti/passgen/internal/domain/repositories"
+	"github.com/kumarasakti/passgen/internal/infrastructure/gpg"
 	"github.com/kumarasakti/passgen/internal/infrastructure/storage"
 )
 
@@ -231,6 +232,15 @@ func (r *EncryptedPasswordStoreRepository) InitializeStore(storeName string, enc
 
 	r.RegisterStorage(storeName, encStorage)
 	return nil
+}
+
+// InitializeLocalStore creates a new local-only password store
+func (r *EncryptedPasswordStoreRepository) InitializeLocalStore(storeName, storePath, gpgKeyID string) error {
+	// Create GPG service and local-only storage
+	gpgService := gpg.NewGPGService(gpgKeyID)
+	encStorage := storage.NewLocalOnlyEncryptedStorage(storePath, gpgService)
+
+	return r.InitializeStore(storeName, encStorage)
 }
 
 // ConnectRemote connects a store to a remote Git repository
