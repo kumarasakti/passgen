@@ -22,11 +22,11 @@ func NewGitService(repoPath string) *GitService {
 
 // RepositoryInfo contains information about a Git repository
 type RepositoryInfo struct {
-	Path      string
-	RemoteURL string
-	Branch    string
+	Path       string
+	RemoteURL  string
+	Branch     string
 	LastCommit string
-	Status    string
+	Status     string
 }
 
 // InitializeRepository initializes a new Git repository
@@ -38,7 +38,7 @@ func (g *GitService) InitializeRepository() error {
 
 	cmd := exec.Command("git", "init")
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to initialize git repository: %s - %w", string(output), err)
@@ -77,7 +77,7 @@ func (g *GitService) CloneRepository(remoteURL string) error {
 	repoName := filepath.Base(g.repoPath)
 	cmd := exec.Command("git", "clone", remoteURL, repoName)
 	cmd.Dir = parentDir
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to clone repository: %s - %w", string(output), err)
@@ -90,7 +90,7 @@ func (g *GitService) CloneRepository(remoteURL string) error {
 func (g *GitService) AddRemote(name, url string) error {
 	cmd := exec.Command("git", "remote", "add", name, url)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to add remote: %s - %w", string(output), err)
@@ -110,7 +110,7 @@ func (g *GitService) Pull(remote, branch string) error {
 
 	cmd := exec.Command("git", "pull", remote, branch)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to pull from remote: %s - %w", string(output), err)
@@ -130,7 +130,7 @@ func (g *GitService) Push(remote, branch string) error {
 
 	cmd := exec.Command("git", "push", remote, branch)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to push to remote: %s - %w", string(output), err)
@@ -148,7 +148,7 @@ func (g *GitService) AddFiles(files []string) error {
 	args := append([]string{"add"}, files...)
 	cmd := exec.Command("git", args...)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to add files: %s - %w", string(output), err)
@@ -161,7 +161,7 @@ func (g *GitService) AddFiles(files []string) error {
 func (g *GitService) Commit(message string) error {
 	cmd := exec.Command("git", "commit", "-m", message)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to commit: %s - %w", string(output), err)
@@ -219,7 +219,7 @@ func (g *GitService) GetStatus() (*RepositoryInfo, error) {
 func (g *GitService) HasChanges() (bool, error) {
 	cmd := exec.Command("git", "status", "--porcelain")
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.Output()
 	if err != nil {
 		return false, fmt.Errorf("failed to check git status: %w", err)
@@ -232,7 +232,7 @@ func (g *GitService) HasChanges() (bool, error) {
 func (g *GitService) IsRepository() bool {
 	cmd := exec.Command("git", "rev-parse", "--git-dir")
 	cmd.Dir = g.repoPath
-	
+
 	err := cmd.Run()
 	return err == nil
 }
@@ -260,7 +260,7 @@ func (g *GitService) ConfigureUser(name, email string) error {
 func (g *GitService) GetConflicts() ([]string, error) {
 	cmd := exec.Command("git", "diff", "--name-only", "--diff-filter=U")
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get conflicts: %w", err)
@@ -278,7 +278,7 @@ func (g *GitService) GetConflicts() ([]string, error) {
 func (g *GitService) ResolveConflict(filePath string) error {
 	cmd := exec.Command("git", "add", filePath)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to resolve conflict for %s: %s - %w", filePath, string(output), err)
@@ -291,7 +291,7 @@ func (g *GitService) ResolveConflict(filePath string) error {
 func (g *GitService) CreateBranch(branchName string) error {
 	cmd := exec.Command("git", "checkout", "-b", branchName)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to create branch %s: %s - %w", branchName, string(output), err)
@@ -304,7 +304,7 @@ func (g *GitService) CreateBranch(branchName string) error {
 func (g *GitService) SwitchBranch(branchName string) error {
 	cmd := exec.Command("git", "checkout", branchName)
 	cmd.Dir = g.repoPath
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to switch to branch %s: %s - %w", branchName, string(output), err)

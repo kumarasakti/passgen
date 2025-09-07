@@ -16,7 +16,7 @@ func TestGitService_InitializeRepository(t *testing.T) {
 
 	// Initialize Git service
 	service := NewGitService(tempDir)
-	
+
 	// Test initialization
 	err = service.InitializeRepository()
 	if err != nil {
@@ -45,7 +45,7 @@ func TestGitService_IsRepository(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	service := NewGitService(tempDir)
-	
+
 	// Should not be a repository initially
 	if service.IsRepository() {
 		t.Error("Expected false for non-repository directory")
