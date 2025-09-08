@@ -8,14 +8,14 @@ type StorageBackend interface {
 	ListFiles(prefix string) ([]string, error)
 	DeleteFile(key string) error
 	FileExists(key string) (bool, error)
-	
+
 	// Storage operations
 	Initialize(storeName string) error
 	IsInitialized(storeName string) (bool, error)
-	
+
 	// Sync operations (for backends that support it)
 	Sync() error
-	
+
 	// Backend information
 	GetBackendType() string
 	GetConnectionInfo() map[string]string

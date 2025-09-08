@@ -7,19 +7,19 @@ import (
 	"github.com/kumarasakti/passgen/internal/domain/entities"
 )
 
-// PasswordGenerator handles secure password generation
+// Provides cryptographically secure password generation with configurable character sets
 type PasswordGenerator struct {
 	charsetManager *entities.CharacterSet
 }
 
-// NewPasswordGenerator creates a new PasswordGenerator instance
+// Initializes secure password generation with character set management
 func NewPasswordGenerator() *PasswordGenerator {
 	return &PasswordGenerator{
 		charsetManager: entities.NewCharacterSet(),
 	}
 }
 
-// GeneratePassword generates a single password based on the provided configuration
+// Creates cryptographically random password using specified configuration parameters
 func (pg *PasswordGenerator) GeneratePassword(config entities.PasswordConfig) (entities.Password, error) {
 	if err := config.Validate(); err != nil {
 		return entities.Password{}, err
@@ -42,7 +42,7 @@ func (pg *PasswordGenerator) GeneratePassword(config entities.PasswordConfig) (e
 	return entities.NewPassword(string(passwordBytes)), nil
 }
 
-// GenerateMultiplePasswords generates multiple passwords based on the configuration
+// Produces collection of unique secure passwords for batch generation needs
 func (pg *PasswordGenerator) GenerateMultiplePasswords(config entities.PasswordConfig) ([]entities.Password, error) {
 	if err := config.Validate(); err != nil {
 		return nil, err

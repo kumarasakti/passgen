@@ -15,22 +15,22 @@ type StoreConfig struct {
 	LocalOnly bool   `json:"local_only"`
 }
 
-// StoreRegistry manages store configurations
+// Provides centralized management of password store configurations and metadata
 type StoreRegistry struct {
 	configPath string
 	stores     map[string]StoreConfig
 }
 
-// NewStoreRegistry creates a new store registry
+// Initializes store configuration management with persistent storage
 func NewStoreRegistry() *StoreRegistry {
 	homeDir, _ := os.UserHomeDir()
 	configPath := filepath.Join(homeDir, ".passgen", "stores.json")
-	
+
 	registry := &StoreRegistry{
 		configPath: configPath,
 		stores:     make(map[string]StoreConfig),
 	}
-	
+
 	registry.load()
 	return registry
 }
@@ -41,7 +41,7 @@ func (r *StoreRegistry) RegisterStore(config StoreConfig) error {
 	return r.save()
 }
 
-// GetStore retrieves store configuration
+// Retrieves specific store configuration by name from registry
 func (r *StoreRegistry) GetStore(name string) (StoreConfig, error) {
 	config, exists := r.stores[name]
 	if !exists {
@@ -50,7 +50,7 @@ func (r *StoreRegistry) GetStore(name string) (StoreConfig, error) {
 	return config, nil
 }
 
-// ListStores returns all registered stores
+// Provides complete inventory of all registered store configurations
 func (r *StoreRegistry) ListStores() []StoreConfig {
 	var configs []StoreConfig
 	for _, config := range r.stores {
@@ -68,7 +68,7 @@ func (r *StoreRegistry) load() error {
 	if err != nil {
 		return err
 	}
-	
+
 	return json.Unmarshal(data, &r.stores)
 }
 
@@ -79,11 +79,11 @@ func (r *StoreRegistry) save() error {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
-	
+
 	data, err := json.MarshalIndent(r.stores, "", "  ")
 	if err != nil {
 		return err
 	}
-	
+
 	return os.WriteFile(r.configPath, data, 0600)
 }

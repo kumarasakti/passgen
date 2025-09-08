@@ -11,17 +11,17 @@ const (
 	Symbols       = "!@#$%^&*()_+-=[]{}|;:,.<>?"
 )
 
-// CharacterSet manages character sets for password generation
+// Provides flexible character set construction for secure password generation
 type CharacterSet struct {
 	charset string
 }
 
-// NewCharacterSet creates a new CharacterSet instance
+// Initializes character set management for password generation
 func NewCharacterSet() *CharacterSet {
 	return &CharacterSet{}
 }
 
-// BuildCharset builds a character set based on the provided configuration
+// Assembles custom character set based on user preferences and security requirements
 func (cs *CharacterSet) BuildCharset(config PasswordConfig) (string, error) {
 	if err := config.Validate(); err != nil {
 		return "", err
@@ -122,7 +122,7 @@ func (cs *CharacterSet) CalculateCharsetSize(config PasswordConfig) int {
 	return size
 }
 
-// GetCharset returns the current charset
+// Provides access to the currently configured character set for password generation
 func (cs *CharacterSet) GetCharset() string {
 	return cs.charset
 }

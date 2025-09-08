@@ -72,7 +72,7 @@ type Password struct {
 	Length int
 }
 
-// NewPassword creates a new Password instance
+// Constructs password entity with automatic length calculation
 func NewPassword(value string) Password {
 	return Password{
 		Value:  value,
@@ -80,31 +80,31 @@ func NewPassword(value string) Password {
 	}
 }
 
-// HasLowercase checks if password contains lowercase letters
+// Detects presence of lowercase alphabetic characters for complexity validation
 func (p Password) HasLowercase() bool {
 	matched, _ := regexp.MatchString(`[a-z]`, p.Value)
 	return matched
 }
 
-// HasUppercase checks if password contains uppercase letters
+// Detects presence of uppercase alphabetic characters for complexity validation
 func (p Password) HasUppercase() bool {
 	matched, _ := regexp.MatchString(`[A-Z]`, p.Value)
 	return matched
 }
 
-// HasNumbers checks if password contains numbers
+// Detects presence of numeric characters for complexity validation
 func (p Password) HasNumbers() bool {
 	matched, _ := regexp.MatchString(`[0-9]`, p.Value)
 	return matched
 }
 
-// HasSymbols checks if password contains symbols
+// Detects presence of special symbols for complexity validation
 func (p Password) HasSymbols() bool {
 	matched, _ := regexp.MatchString(`[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]`, p.Value)
 	return matched
 }
 
-// GetCharacterTypes returns the types of characters present in the password
+// Categorizes all character types present for complexity analysis
 func (p Password) GetCharacterTypes() []string {
 	var types []string
 
@@ -124,7 +124,7 @@ func (p Password) GetCharacterTypes() []string {
 	return types
 }
 
-// IsEmpty checks if password is empty
+// Validates password contains actual content beyond whitespace
 func (p Password) IsEmpty() bool {
 	return strings.TrimSpace(p.Value) == ""
 }
@@ -134,7 +134,7 @@ type PasswordError struct {
 	Message string
 }
 
-// NewPasswordError creates a new password error
+// Constructs password-specific error with descriptive message
 func NewPasswordError(message string) *PasswordError {
 	return &PasswordError{Message: message}
 }

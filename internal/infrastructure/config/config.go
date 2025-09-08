@@ -10,9 +10,9 @@ import (
 
 // StorageConfig represents the storage configuration
 type StorageConfig struct {
-	Backend  string                    `yaml:"backend"`
-	Settings map[string]string         `yaml:"settings"`
-	Stores   map[string]StoreConfig    `yaml:"stores"`
+	Backend  string                 `yaml:"backend"`
+	Settings map[string]string      `yaml:"settings"`
+	Stores   map[string]StoreConfig `yaml:"stores"`
 }
 
 // StoreConfig represents configuration for a single store
@@ -35,7 +35,7 @@ type GPGConfig struct {
 	GPGBinary    string `yaml:"gpg_binary"`
 }
 
-// DefaultConfig returns the default configuration
+// Provides complete default configuration for new installations
 func DefaultConfig() *PassgenConfig {
 	return &PassgenConfig{
 		Storage: StorageConfig{
@@ -54,7 +54,7 @@ func DefaultConfig() *PassgenConfig {
 // LoadConfig loads configuration from file
 func LoadConfig() (*PassgenConfig, error) {
 	configPath := getConfigPath()
-	
+
 	// If config doesn't exist, create default
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		config := DefaultConfig()
@@ -63,42 +63,42 @@ func LoadConfig() (*PassgenConfig, error) {
 		}
 		return config, nil
 	}
-	
+
 	// Load existing config
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
-	
+
 	var config PassgenConfig
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
-	
+
 	return &config, nil
 }
 
 // SaveConfig saves configuration to file
 func SaveConfig(config *PassgenConfig) error {
 	configPath := getConfigPath()
-	
+
 	// Create config directory if it doesn't exist
 	configDir := filepath.Dir(configPath)
 	if err := os.MkdirAll(configDir, 0700); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
-	
+
 	// Marshal config to YAML
 	data, err := yaml.Marshal(config)
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
-	
+
 	// Write config file
 	if err := os.WriteFile(configPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -116,7 +116,7 @@ func (config *PassgenConfig) GetStoreConfig(name string) (StoreConfig, bool) {
 	return store, exists
 }
 
-// getConfigPath returns the configuration file path
+// Determines standard configuration file location in user's home directory
 func getConfigPath() string {
 	homeDir, _ := os.UserHomeDir()
 	return filepath.Join(homeDir, ".passgen", "config.yaml")

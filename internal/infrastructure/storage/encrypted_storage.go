@@ -13,7 +13,7 @@ import (
 	"github.com/kumarasakti/passgen/internal/infrastructure/gpg"
 )
 
-// EncryptedStorage handles encrypted password storage with optional Git backing
+// Provides secure password storage with GPG encryption and optional Git synchronization
 type EncryptedStorage struct {
 	storePath   string
 	gpgService  *gpg.GPGService
@@ -22,7 +22,7 @@ type EncryptedStorage struct {
 	localOnly   bool
 }
 
-// NewEncryptedStorage creates a new encrypted storage instance
+// Initializes encrypted storage with Git synchronization capabilities
 func NewEncryptedStorage(storePath string, gpgService *gpg.GPGService) *EncryptedStorage {
 	gitService := git.NewGitService(storePath)
 
@@ -34,7 +34,7 @@ func NewEncryptedStorage(storePath string, gpgService *gpg.GPGService) *Encrypte
 	}
 }
 
-// NewLocalOnlyEncryptedStorage creates a new local-only encrypted storage instance
+// Initializes encrypted storage with local-only operation (no Git synchronization)
 func NewLocalOnlyEncryptedStorage(storePath string, gpgService *gpg.GPGService) *EncryptedStorage {
 	return &EncryptedStorage{
 		storePath:  storePath,
@@ -255,7 +255,7 @@ func (es *EncryptedStorage) LoadPassword(name string) (*entities.PasswordEntry, 
 	}, nil
 }
 
-// ListPasswords returns metadata for all stored passwords
+// Provides overview of all stored passwords without exposing actual password values
 func (es *EncryptedStorage) ListPasswords() ([]entities.PasswordMetadata, error) {
 	if !es.initialized {
 		return nil, fmt.Errorf("store not initialized")
@@ -379,7 +379,7 @@ func (es *EncryptedStorage) Sync(remote, branch string) error {
 	return nil
 }
 
-// GetStoreInfo returns information about the store
+// Delivers comprehensive store status including Git repository details
 func (es *EncryptedStorage) GetStoreInfo() (*git.RepositoryInfo, error) {
 	if !es.initialized {
 		return nil, fmt.Errorf("store not initialized")

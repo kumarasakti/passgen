@@ -12,7 +12,7 @@ import (
 	"github.com/kumarasakti/passgen/internal/infrastructure/storage/backends"
 )
 
-// BackendStorage handles encrypted password storage with pluggable backends
+// Provides encrypted password storage with flexible backend support (local, cloud, etc.)
 type BackendStorage struct {
 	backend     interfaces.StorageBackend
 	gpgService  *gpg.GPGService
@@ -20,7 +20,7 @@ type BackendStorage struct {
 	initialized bool
 }
 
-// NewBackendStorage creates a new backend storage instance
+// Initializes storage with specified backend and GPG encryption capabilities
 func NewBackendStorage(backend interfaces.StorageBackend, gpgService *gpg.GPGService, storeName string) *BackendStorage {
 	return &BackendStorage{
 		backend:    backend,
@@ -29,19 +29,19 @@ func NewBackendStorage(backend interfaces.StorageBackend, gpgService *gpg.GPGSer
 	}
 }
 
-// NewLocalBackendStorage creates a local backend storage instance
+// Configures storage with local file system backend for encrypted password storage
 func NewLocalBackendStorage(basePath string, gpgService *gpg.GPGService, storeName string) *BackendStorage {
 	backend := backends.NewLocalBackend(basePath)
 	return NewBackendStorage(backend, gpgService, storeName)
 }
 
-// NewR2BackendStorage creates an R2 backend storage instance
+// Configures storage with Cloudflare R2 cloud backend for encrypted password storage
 func NewR2BackendStorage(config backends.R2Config, storePrefix string, gpgService *gpg.GPGService, storeName string) (*BackendStorage, error) {
 	backend, err := backends.NewR2Backend(config, storePrefix)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create R2 backend: %w", err)
 	}
-	
+
 	return NewBackendStorage(backend, gpgService, storeName), nil
 }
 
@@ -51,7 +51,7 @@ func (bs *BackendStorage) InitializeStore(storeName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to initialize store: %w", err)
 	}
-	
+
 	bs.initialized = true
 	return nil
 }
@@ -61,7 +61,7 @@ func (bs *BackendStorage) SetInitialized(initialized bool) {
 	bs.initialized = initialized
 }
 
-// IsInitialized checks if the store is initialized
+// Verifies store initialization status through backend validation
 func (bs *BackendStorage) IsInitialized() (bool, error) {
 	return bs.backend.IsInitialized(bs.storeName)
 }
@@ -116,7 +116,7 @@ func (bs *BackendStorage) LoadPassword(name string) (*entities.PasswordEntry, er
 	}
 
 	fileName := bs.sanitizeFileName(name) + ".gpg"
-	
+
 	// Load from backend
 	encryptedData, err := bs.backend.LoadFile(fileName)
 	if err != nil {
@@ -150,7 +150,7 @@ func (bs *BackendStorage) LoadPassword(name string) (*entities.PasswordEntry, er
 	}, nil
 }
 
-// ListPasswords returns metadata for all stored passwords
+// Provides comprehensive overview of stored passwords without exposing sensitive data
 func (bs *BackendStorage) ListPasswords() ([]entities.PasswordMetadata, error) {
 	if !bs.initialized {
 		return nil, fmt.Errorf("store not initialized")
@@ -212,13 +212,13 @@ func (bs *BackendStorage) DeletePassword(name string) error {
 	}
 
 	fileName := bs.sanitizeFileName(name) + ".gpg"
-	
+
 	// Check if file exists
 	exists, err := bs.backend.FileExists(fileName)
 	if err != nil {
 		return fmt.Errorf("failed to check if password exists: %w", err)
 	}
-	
+
 	if !exists {
 		return fmt.Errorf("password '%s' not found", name)
 	}
@@ -237,14 +237,14 @@ func (bs *BackendStorage) Sync() error {
 	return bs.backend.Sync()
 }
 
-// GetBackendInfo returns information about the storage backend
+// Provides comprehensive backend configuration and connection details
 func (bs *BackendStorage) GetBackendInfo() map[string]string {
 	info := bs.backend.GetConnectionInfo()
 	info["store_name"] = bs.storeName
 	return info
 }
 
-// GetPasswordsNeedingRotation returns passwords that need rotation
+// Identifies passwords exceeding their rotation schedule for security maintenance
 func (bs *BackendStorage) GetPasswordsNeedingRotation() ([]entities.PasswordMetadata, error) {
 	if !bs.initialized {
 		return nil, fmt.Errorf("store not initialized")

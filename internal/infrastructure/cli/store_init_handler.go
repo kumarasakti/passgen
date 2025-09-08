@@ -74,7 +74,7 @@ Use --git flag to enable Git backing for synchronization:
 
 	// Add flag for Git backing
 	cmd.Flags().Bool("git", false, "Enable Git backing for synchronization")
-	
+
 	return cmd
 }
 
@@ -316,13 +316,13 @@ func (h *StoreInitHandler) handleInfo(cmd *cobra.Command, args []string) error {
 // handleSetupGPG handles GPG setup
 func (h *StoreInitHandler) handleSetupGPG(cmd *cobra.Command, args []string) error {
 	fmt.Printf("🔑 GPG Setup for Password Stores\n\n")
-	
+
 	gpgService := gpg.NewGPGService("")
 	keys, err := gpgService.ListKeys()
 	if err != nil {
 		return fmt.Errorf("failed to list GPG keys: %w", err)
 	}
-	
+
 	if len(keys) == 0 {
 		fmt.Printf("❌ No GPG keys found.\n\n")
 		fmt.Printf("🔐 GPG keys are essential for secure password encryption.\n")
@@ -333,13 +333,13 @@ func (h *StoreInitHandler) handleSetupGPG(cmd *cobra.Command, args []string) err
 		fmt.Printf("  2. Show manual creation instructions\n")
 		fmt.Printf("  3. Exit\n\n")
 		fmt.Printf("Choose option (1-3): ")
-		
+
 		var choice int
 		_, err = fmt.Scanf("%d", &choice)
 		if err != nil {
 			return fmt.Errorf("invalid input: %w", err)
 		}
-		
+
 		switch choice {
 		case 1:
 			_, err := h.createGPGKeyInteractive()
@@ -358,24 +358,24 @@ func (h *StoreInitHandler) handleSetupGPG(cmd *cobra.Command, args []string) err
 			return fmt.Errorf("invalid choice: please select 1, 2, or 3")
 		}
 	}
-	
+
 	fmt.Printf("✅ Found %d GPG key(s):\n\n", len(keys))
 	for i, key := range keys {
 		status := "✅ Ready to use"
 		if key.KeyLength < 2048 && key.KeyType != "22" { // 22 is Ed25519
 			status = "⚠️  Key length below recommended 2048 bits"
 		}
-		
+
 		fmt.Printf("%d. %s\n", i+1, key.UserID)
 		fmt.Printf("   ID: %s\n", key.ID)
 		fmt.Printf("   Type: %s | Length: %d bits\n", key.KeyType, key.KeyLength)
 		fmt.Printf("   Status: %s\n\n", status)
 	}
-	
+
 	fmt.Printf("💡 These keys are ready for password store encryption.\n")
 	fmt.Printf("🚀 You can now create a store with: passgen store init <store-name>\n\n")
 	fmt.Printf("Would you like to create an additional GPG key? (y/N): ")
-	
+
 	var response string
 	fmt.Scanln(&response)
 	if strings.ToLower(response) == "y" || strings.ToLower(response) == "yes" {
@@ -386,9 +386,9 @@ func (h *StoreInitHandler) handleSetupGPG(cmd *cobra.Command, args []string) err
 		}
 		fmt.Printf("✅ Additional GPG key created successfully!\n")
 	}
-	
+
 	return nil
-}// selectGPGKey interactively selects a GPG key
+} // selectGPGKey interactively selects a GPG key
 func (h *StoreInitHandler) selectGPGKey() (string, error) {
 	gpgService := gpg.NewGPGService("")
 	keys, err := gpgService.ListKeys()
@@ -405,13 +405,13 @@ func (h *StoreInitHandler) selectGPGKey() (string, error) {
 		fmt.Printf("  2. Create manually with 'gpg --full-generate-key'\n")
 		fmt.Printf("  3. Exit and create key later\n\n")
 		fmt.Printf("Choose option (1-3): ")
-		
+
 		var choice int
 		_, err = fmt.Scanf("%d", &choice)
 		if err != nil {
 			return "", fmt.Errorf("invalid input: %w", err)
 		}
-		
+
 		switch choice {
 		case 1:
 			// Create GPG key automatically
@@ -431,7 +431,7 @@ func (h *StoreInitHandler) selectGPGKey() (string, error) {
 			if err != nil {
 				return "", fmt.Errorf("failed to list keys after creation: %w", err)
 			}
-			
+
 			if len(keysAfter) > 0 {
 				// If there's exactly one key now, use it
 				if len(keysAfter) == 1 {
@@ -444,13 +444,13 @@ func (h *StoreInitHandler) selectGPGKey() (string, error) {
 					fmt.Printf("     ID: %s | Type: %s | Length: %d bits\n\n", key.ID, key.KeyType, key.KeyLength)
 				}
 				fmt.Printf("Which is your new key? (1-%d): ", len(keysAfter))
-				
+
 				var choice int
 				_, err = fmt.Scanf("%d", &choice)
 				if err != nil || choice < 1 || choice > len(keysAfter) {
 					return "", fmt.Errorf("invalid selection")
 				}
-				
+
 				return keysAfter[choice-1].ID, nil
 			}
 			return "", fmt.Errorf("no keys found after creation")
@@ -477,18 +477,18 @@ func (h *StoreInitHandler) selectGPGKey() (string, error) {
 		fmt.Printf("  %d. %s\n", i+1, key.UserID)
 		fmt.Printf("     ID: %s | Type: %s | Length: %d bits | %s\n\n", key.ID, key.KeyType, key.KeyLength, status)
 	}
-	
+
 	fmt.Printf("  %d. 🆕 Create a new GPG key\n\n", len(keys)+1)
-	
+
 	fmt.Printf("Which option would you like? (1-%d): ", len(keys)+1)
-	
+
 	// Read user input for key selection
 	var choice int
 	_, err = fmt.Scanf("%d", &choice)
 	if err != nil || choice < 1 || choice > len(keys)+1 {
 		return "", fmt.Errorf("invalid selection: please choose a number between 1 and %d", len(keys)+1)
 	}
-	
+
 	// Check if user wants to create a new key
 	if choice == len(keys)+1 {
 		fmt.Printf("\n")
@@ -499,10 +499,10 @@ func (h *StoreInitHandler) selectGPGKey() (string, error) {
 		fmt.Printf("✅ New GPG key created and selected!\n")
 		return keyID, nil
 	}
-	
+
 	selectedKey := keys[choice-1]
 	fmt.Printf("🔑 Selected: %s\n", selectedKey.UserID)
-	
+
 	return selectedKey.ID, nil
 }
 
@@ -518,7 +518,7 @@ func (h *StoreInitHandler) createGPGKeyInteractive() (string, error) {
 	fmt.Printf("   • Use a strong passphrase you'll remember\n\n")
 	fmt.Printf("🚀 Starting GPG key generation...\n")
 	fmt.Printf("=====================================\n\n")
-	
+
 	// Get the number of keys before creation to identify the new one
 	gpgService := gpg.NewGPGService("")
 	keysBefore, err := gpgService.ListKeys()
@@ -526,27 +526,27 @@ func (h *StoreInitHandler) createGPGKeyInteractive() (string, error) {
 		// If we can't list keys, continue anyway
 		keysBefore = []gpg.GPGKey{}
 	}
-	
+
 	// Launch GPG's interactive key generation
 	cmd := exec.Command("gpg", "--full-generate-key")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	err = cmd.Run()
 	if err != nil {
 		return "", fmt.Errorf("GPG key generation failed: %w", err)
 	}
-	
+
 	fmt.Printf("\n=====================================\n")
 	fmt.Printf("✅ GPG key generation completed!\n\n")
-	
+
 	// Find the newly created key
 	keysAfter, err := gpgService.ListKeys()
 	if err != nil {
 		return "", fmt.Errorf("failed to list keys after creation: %w", err)
 	}
-	
+
 	// Find the new key by comparing before and after
 	var newKey *gpg.GPGKey
 	for _, keyAfter := range keysAfter {
@@ -562,7 +562,7 @@ func (h *StoreInitHandler) createGPGKeyInteractive() (string, error) {
 			break
 		}
 	}
-	
+
 	if newKey == nil {
 		// Fallback: if we can't detect the new key, ask user to select
 		if len(keysAfter) > len(keysBefore) {
@@ -572,24 +572,24 @@ func (h *StoreInitHandler) createGPGKeyInteractive() (string, error) {
 				fmt.Printf("     ID: %s | Type: %s | Length: %d bits\n\n", key.ID, key.KeyType, key.KeyLength)
 			}
 			fmt.Printf("Which is your new key? (1-%d): ", len(keysAfter))
-			
+
 			var choice int
 			_, err = fmt.Scanf("%d", &choice)
 			if err != nil || choice < 1 || choice > len(keysAfter) {
 				return "", fmt.Errorf("invalid selection")
 			}
-			
+
 			newKey = &keysAfter[choice-1]
 		} else {
 			return "", fmt.Errorf("could not detect newly created key")
 		}
 	}
-	
+
 	fmt.Printf("🔑 New GPG key ready:\n")
 	fmt.Printf("   Name: %s\n", newKey.UserID)
 	fmt.Printf("   Key ID: %s\n", newKey.ID)
 	fmt.Printf("   Type: %s | Length: %d bits\n\n", newKey.KeyType, newKey.KeyLength)
-	
+
 	return newKey.ID, nil
 }
 
@@ -605,21 +605,21 @@ func (h *StoreInitHandler) createGPGKey() error {
 	fmt.Printf("   • Use a strong passphrase you'll remember\n\n")
 	fmt.Printf("🚀 Starting GPG key generation...\n")
 	fmt.Printf("=====================================\n\n")
-	
+
 	// Launch GPG's interactive key generation
 	cmd := exec.Command("gpg", "--full-generate-key")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("GPG key generation failed: %w", err)
 	}
-	
+
 	fmt.Printf("\n=====================================\n")
 	fmt.Printf("✅ GPG key generation completed!\n")
 	fmt.Printf("🚀 You can now run 'passgen store init <store-name>' to create your password store.\n")
-	
+
 	return nil
 }

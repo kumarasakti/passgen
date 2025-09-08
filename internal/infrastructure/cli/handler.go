@@ -18,7 +18,7 @@ type Handler struct {
 	config          entities.PasswordConfig
 }
 
-// NewHandler creates a new CLI handler
+// Initializes the CLI handler with default password configuration
 func NewHandler() *Handler {
 	return &Handler{
 		passwordService: application.NewPasswordService(),
@@ -35,7 +35,7 @@ func NewHandler() *Handler {
 	}
 }
 
-// CreateRootCommand creates and configures the root command
+// Sets up the main CLI command with all subcommands and flags
 func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "passgen",
@@ -65,23 +65,23 @@ func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 	return rootCmd
 }
 
-// createBanner creates banner for passgen
+// Displays branded ASCII art banner with version details
 func (h *Handler) createBanner(version string) string {
 	return fmt.Sprintf(`
   ____   _    ____ ____   ____ _____ _   _ 
  |  _ \ / \  / ___/ ___| / ___| ____| \ | |
  | |_) / _ \ \___ \___ \| |  _|  _| |  \| |
  |  __/ ___ \ ___) |__) | |_| | |___| |\  |
- |_| /_/   \_\____/____/ \____|_____|_| \_|
+ |_| /_/   \_\____/____/ \____|_____|_| \_| %s
 
-  🔒 Secure Password Generation & Management %s
+  🔒 Secure Password Generation & Management 
   🚀 High performance, simple commands, secure storage
 
 passgen is a command-line tool for generating secure passwords with
 safe storage and management features.`, version)
 }
 
-// HandleGeneratePassword handles the main password generation
+// Main entry point for password generation with configurable options
 func (h *Handler) HandleGeneratePassword(cmd *cobra.Command, args []string) {
 	// Handle convenience flags
 	h.handleConvenienceFlags(cmd)
@@ -97,7 +97,7 @@ func (h *Handler) HandleGeneratePassword(cmd *cobra.Command, args []string) {
 	fmt.Print(output)
 }
 
-// HandleCheckPassword handles password strength checking
+// Provides detailed password security analysis and improvement recommendations
 func (h *Handler) HandleCheckPassword(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Fprintf(os.Stderr, "Error: exactly one password argument required\n")
@@ -111,7 +111,7 @@ func (h *Handler) HandleCheckPassword(cmd *cobra.Command, args []string) {
 	fmt.Print(output)
 }
 
-// HandlePresetPassword handles preset password generation
+// Generates passwords using predefined security templates
 func (h *Handler) HandlePresetPassword(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Fprintf(os.Stderr, "Error: exactly one preset type argument required\n")
@@ -130,7 +130,7 @@ func (h *Handler) HandlePresetPassword(cmd *cobra.Command, args []string) {
 	fmt.Print(output)
 }
 
-// HandleWordPassword handles word-based password generation
+// Creates passwords by transforming user-provided words with various strategies
 func (h *Handler) HandleWordPassword(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Fprintf(os.Stderr, "Error: exactly one word argument required\n")
@@ -198,7 +198,7 @@ func (h *Handler) HandleWordPassword(cmd *cobra.Command, args []string) {
 	fmt.Print(output)
 }
 
-// addFlags adds command line flags to the root command
+// Enables comprehensive password generation with all available character sets and security options
 func (h *Handler) addFlags(cmd *cobra.Command) {
 	cmd.Flags().IntVarP(&h.config.Length, "length", "l", entities.DefaultLength, "Password length")
 	cmd.Flags().BoolVar(&h.config.IncludeLower, "lower", true, "Include lowercase letters")
@@ -215,7 +215,7 @@ func (h *Handler) addFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolP("alphanumeric", "a", false, "Generate alphanumeric password (letters and numbers)")
 }
 
-// handleConvenienceFlags processes convenience flags that modify configuration
+// Applies quick password templates that override individual character type settings
 func (h *Handler) handleConvenienceFlags(cmd *cobra.Command) {
 	if secure, _ := cmd.Flags().GetBool("secure"); secure {
 		h.config.IncludeLower = true
@@ -239,7 +239,7 @@ func (h *Handler) handleConvenienceFlags(cmd *cobra.Command) {
 	}
 }
 
-// createCheckCommand creates the check subcommand
+// Enables password security evaluation with detailed vulnerability assessment
 func (h *Handler) createCheckCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "check [password]",
@@ -250,7 +250,7 @@ func (h *Handler) createCheckCommand() *cobra.Command {
 	}
 }
 
-// createPresetCommand creates the preset subcommand
+// Provides instant access to common password templates for different security needs
 func (h *Handler) createPresetCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "preset [type]",
@@ -261,7 +261,7 @@ func (h *Handler) createPresetCommand() *cobra.Command {
 	}
 }
 
-// createWordCommand creates the word subcommand
+// Enables memorable password creation through word transformation with multiple security strategies
 func (h *Handler) createWordCommand() *cobra.Command {
 	wordCmd := &cobra.Command{
 		Use:   "word [word]",
@@ -291,7 +291,7 @@ Examples:
 	return wordCmd
 }
 
-// createStoreCommands creates the store command tree (Phase 1B: Enhanced with GPG and Git)
+// Provides complete password store management with local encryption and optional Git synchronization
 func (h *Handler) createStoreCommands() *cobra.Command {
 	// Create card displayer
 	displayer := display.NewCardDisplayer()

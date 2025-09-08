@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-// GitService handles Git repository operations
+// Enables comprehensive Git version control operations for password stores
 type GitService struct {
 	repoPath string
 }
 
-// NewGitService creates a new Git service instance
+// Initializes Git operations for specified repository location
 func NewGitService(repoPath string) *GitService {
 	return &GitService{
 		repoPath: repoPath,
@@ -157,7 +157,7 @@ func (g *GitService) AddFiles(files []string) error {
 	return nil
 }
 
-// Commit creates a new commit
+// Records changes to repository history with descriptive commit message
 func (g *GitService) Commit(message string) error {
 	cmd := exec.Command("git", "commit", "-m", message)
 	cmd.Dir = g.repoPath
@@ -170,7 +170,7 @@ func (g *GitService) Commit(message string) error {
 	return nil
 }
 
-// GetStatus returns the current repository status
+// Provides comprehensive repository information including branch, remote, and commit details
 func (g *GitService) GetStatus() (*RepositoryInfo, error) {
 	info := &RepositoryInfo{
 		Path: g.repoPath,
@@ -215,7 +215,7 @@ func (g *GitService) GetStatus() (*RepositoryInfo, error) {
 	return info, nil
 }
 
-// HasChanges checks if there are uncommitted changes
+// Detects presence of uncommitted modifications in the working directory
 func (g *GitService) HasChanges() (bool, error) {
 	cmd := exec.Command("git", "status", "--porcelain")
 	cmd.Dir = g.repoPath
@@ -228,7 +228,7 @@ func (g *GitService) HasChanges() (bool, error) {
 	return len(strings.TrimSpace(string(output))) > 0, nil
 }
 
-// IsRepository checks if the path is a Git repository
+// Verifies directory contains valid Git repository structure
 func (g *GitService) IsRepository() bool {
 	cmd := exec.Command("git", "rev-parse", "--git-dir")
 	cmd.Dir = g.repoPath
@@ -256,7 +256,7 @@ func (g *GitService) ConfigureUser(name, email string) error {
 	return nil
 }
 
-// GetConflicts returns files with merge conflicts
+// Identifies files requiring manual resolution after merge conflicts
 func (g *GitService) GetConflicts() ([]string, error) {
 	cmd := exec.Command("git", "diff", "--name-only", "--diff-filter=U")
 	cmd.Dir = g.repoPath
@@ -287,7 +287,7 @@ func (g *GitService) ResolveConflict(filePath string) error {
 	return nil
 }
 
-// CreateBranch creates and switches to a new branch
+// Establishes new development branch and switches working context to it
 func (g *GitService) CreateBranch(branchName string) error {
 	cmd := exec.Command("git", "checkout", "-b", branchName)
 	cmd.Dir = g.repoPath

@@ -22,7 +22,7 @@ type StrengthCheckResult struct {
 // PasswordStrengthChecker provides sarcastic password strength checking
 type PasswordStrengthChecker struct{}
 
-// NewPasswordStrengthChecker creates a new PasswordStrengthChecker instance
+// Evaluates password security with entertaining feedback and improvement suggestions
 func NewPasswordStrengthChecker() *PasswordStrengthChecker {
 	return &PasswordStrengthChecker{}
 }

@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-// GPGService handles GPG encryption and decryption operations
+// Provides secure encryption and decryption capabilities using GPG keys
 type GPGService struct {
 	keyID string
 }
 
-// NewGPGService creates a new GPG service instance
+// Initializes GPG operations with specified key identification
 func NewGPGService(keyID string) *GPGService {
 	return &GPGService{
 		keyID: keyID,
@@ -28,7 +28,7 @@ type GPGKey struct {
 	KeyLength   int
 }
 
-// ListKeys returns available GPG keys
+// Discovers all available GPG private keys with detailed metadata
 func (g *GPGService) ListKeys() ([]GPGKey, error) {
 	cmd := exec.Command("gpg", "--list-secret-keys", "--with-colons")
 	output, err := cmd.Output()
@@ -39,7 +39,7 @@ func (g *GPGService) ListKeys() ([]GPGKey, error) {
 	return parseGPGKeys(string(output)), nil
 }
 
-// ValidateKey checks if the specified key exists and is usable
+// Verifies GPG key accessibility and readiness for encryption operations
 func (g *GPGService) ValidateKey(keyID string) error {
 	cmd := exec.Command("gpg", "--list-secret-keys", keyID)
 	err := cmd.Run()
@@ -89,7 +89,7 @@ func (g *GPGService) Decrypt(encryptedData []byte) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-// Sign creates a detached signature for the data
+// Generates cryptographic signature for data integrity verification
 func (g *GPGService) Sign(data []byte) ([]byte, error) {
 	cmd := exec.Command("gpg", "--armor", "--detach-sign", "--local-user", g.keyID)
 	cmd.Stdin = bytes.NewReader(data)
@@ -129,7 +129,7 @@ func (g *GPGService) VerifySignature(data, signature []byte) error {
 	return nil
 }
 
-// GetKeyFingerprint returns the fingerprint for a key ID
+// Extracts unique key fingerprint for identification and verification purposes
 func (g *GPGService) GetKeyFingerprint(keyID string) (string, error) {
 	cmd := exec.Command("gpg", "--list-keys", "--with-colons", keyID)
 	output, err := cmd.Output()

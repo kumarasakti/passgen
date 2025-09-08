@@ -25,19 +25,19 @@ type PasswordAnalysis struct {
 	TransformationQuality string
 }
 
-// PasswordAnalyzer handles password security analysis
+// Provides comprehensive password security evaluation and strength assessment
 type PasswordAnalyzer struct {
 	charsetManager *entities.CharacterSet
 }
 
-// NewPasswordAnalyzer creates a new PasswordAnalyzer instance
+// Initializes password security analysis with character set management
 func NewPasswordAnalyzer() *PasswordAnalyzer {
 	return &PasswordAnalyzer{
 		charsetManager: entities.NewCharacterSet(),
 	}
 }
 
-// AnalyzePassword performs comprehensive analysis of a password
+// Delivers detailed security metrics including entropy, strength rating, and improvement recommendations
 func (pa *PasswordAnalyzer) AnalyzePassword(password entities.Password, config entities.PasswordConfig) PasswordAnalysis {
 	charsetSize := pa.charsetManager.CalculateCharsetSize(config)
 	characterTypes := password.GetCharacterTypes()

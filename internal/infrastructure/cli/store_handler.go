@@ -5,25 +5,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/kumarasakti/passgen/internal/domain/entities"
 	"github.com/kumarasakti/passgen/internal/domain/repositories"
 	"github.com/kumarasakti/passgen/internal/infrastructure/display"
 	"github.com/kumarasakti/passgen/internal/infrastructure/gpg"
 	infraRepositories "github.com/kumarasakti/passgen/internal/infrastructure/repositories"
 	"github.com/kumarasakti/passgen/internal/infrastructure/storage"
+	"github.com/spf13/cobra"
 )
 
-// StoreHandler handles password store CLI commands
+// Enables comprehensive password store management with encrypted storage
 type StoreHandler struct {
-	repository    repositories.PasswordStoreRepository
-	configRepo    repositories.StoreConfigRepository
-	cardDisplay   *display.CardDisplayer
+	repository  repositories.PasswordStoreRepository
+	configRepo  repositories.StoreConfigRepository
+	cardDisplay *display.CardDisplayer
 }
 
-// NewStoreHandler creates a new store command handler
+// Initializes store command handling with repository and configuration support
 func NewStoreHandler(
-	repo repositories.PasswordStoreRepository, 
+	repo repositories.PasswordStoreRepository,
 	configRepo repositories.StoreConfigRepository,
 ) *StoreHandler {
 	return &StoreHandler{
@@ -33,7 +33,7 @@ func NewStoreHandler(
 	}
 }
 
-// CreateStoreCommands creates the store command tree
+// Provides complete password store management with Git backing and encryption
 func (h *StoreHandler) CreateStoreCommands() *cobra.Command {
 	storeCmd := &cobra.Command{
 		Use:   "store",
@@ -60,7 +60,7 @@ Password stores allow you to securely store and manage passwords with:
 	return storeCmd
 }
 
-// createGetCommand creates the get password command with enhanced card display
+// Enables secure password retrieval with multiple display and access options
 func (h *StoreHandler) createGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get <service>",
@@ -81,7 +81,7 @@ By default, only metadata is shown (no password). Use flags for secure access:
 	return cmd
 }
 
-// createAddCommand creates the add password command
+// Enables password storage with automatic generation and rotation policy options
 func (h *StoreHandler) createAddCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add <service>",
@@ -105,7 +105,7 @@ Auto-rotation can be configured for enterprise password policies.`,
 	return cmd
 }
 
-// createListPasswordsCommand creates the list passwords command
+// Displays organized overview of all stored passwords with metadata
 func (h *StoreHandler) createListPasswordsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -119,7 +119,7 @@ func (h *StoreHandler) createListPasswordsCommand() *cobra.Command {
 	return cmd
 }
 
-// createRotationCommands creates rotation-related commands
+// Provides automated password rotation management and monitoring
 func (h *StoreHandler) createRotationCommands() *cobra.Command {
 	rotationCmd := &cobra.Command{
 		Use:   "rotation",
@@ -196,14 +196,14 @@ func (h *StoreHandler) createSyncCommand() *cobra.Command {
 
 // Handler methods (Phase 1A: Foundation with enhanced card display)
 
-// GetPassword retrieves password metadata and displays in enhanced card format
+// Delivers secure password access with enhanced card-style presentation
 func (h *StoreHandler) GetPassword(cmd *cobra.Command, args []string) error {
 	service := args[0]
 	storeName := h.getStoreName(cmd)
-	
+
 	copyToClipboard, _ := cmd.Flags().GetBool("copy")
 	showPassword, _ := cmd.Flags().GetBool("show")
-	
+
 	// Check if we have an encrypted repository (Phase 1B)
 	if h.repository != nil {
 		// Try to load the store
@@ -211,74 +211,74 @@ func (h *StoreHandler) GetPassword(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to load store '%s': %v", storeName, err)
 		}
-		
+
 		fmt.Printf("🔍 Retrieving '%s' from store '%s'...\n", service, storeName)
-		
+
 		// Get password metadata
 		metadata, err := h.repository.GetPasswordMetadata(storeName, service)
 		if err != nil {
 			return fmt.Errorf("failed to get password metadata: %w", err)
 		}
-		
+
 		fmt.Printf("🔓 Decrypted metadata ✅\n\n")
-		
+
 		// Display using enhanced card style
 		h.cardDisplay.DisplayPasswordCard(metadata)
-		
+
 		if copyToClipboard {
 			// Get full password entry for clipboard
 			entry, err := h.repository.GetPassword(storeName, service)
 			if err != nil {
 				return fmt.Errorf("failed to get password: %w", err)
 			}
-			
+
 			// In a real implementation, you'd copy to clipboard
 			fmt.Printf("\n🔐 Password would be copied to clipboard (auto-clears in 30 seconds)\n")
 			fmt.Printf("🔑 Password: %s\n", entry.Password)
 			return nil
 		}
-		
+
 		if showPassword {
 			fmt.Printf("\n⚠️  WARNING: This will display the password in terminal\n")
 			fmt.Printf("❓ Are you sure? Type 'yes' to confirm: ")
-			
+
 			// Simple confirmation for now
 			var confirmation string
 			fmt.Scanln(&confirmation)
-			
+
 			if strings.ToLower(confirmation) == "yes" {
 				// Get full password entry
 				entry, err := h.repository.GetPassword(storeName, service)
 				if err != nil {
 					return fmt.Errorf("failed to get password: %w", err)
 				}
-				
+
 				fmt.Printf("\n🎯 Password for %s:\n", service)
 				h.cardDisplay.DisplayPasswordBox(entry.Password)
 			} else {
 				fmt.Printf("🚫 Password display cancelled\n")
 			}
-			
+
 			return nil
 		}
-		
+
 		return nil
 	}
-	
+
 	// Fallback to Phase 1A demo mode
 	fmt.Printf("🔍 Retrieving '%s' from store '%s'...\n", service, storeName)
 	fmt.Printf("📥 Syncing with remote... ✅\n")
 	fmt.Printf("🔓 Decrypting metadata... ✅\n\n")
-	
+
 	// Mock metadata for demonstration
 	mockMetadata := h.createMockMetadata(service)
 	h.cardDisplay.DisplayPasswordCard(mockMetadata)
-	
+
 	if copyToClipboard {
 		fmt.Printf("\n🔐 Password copied to clipboard (auto-clears in 30 seconds)\n")
 		return nil
 	}
-	
+
 	if showPassword {
 		fmt.Printf("\n⚠️  WARNING: This will display the password in terminal\n")
 		fmt.Printf("❓ Are you sure? Type 'yes' to confirm: ")
@@ -286,7 +286,7 @@ func (h *StoreHandler) GetPassword(cmd *cobra.Command, args []string) error {
 		h.cardDisplay.DisplayPasswordBox("Kx9#mN2$vL8@pQ4!")
 		return nil
 	}
-	
+
 	return nil
 }
 
@@ -294,9 +294,9 @@ func (h *StoreHandler) GetPassword(cmd *cobra.Command, args []string) error {
 func (h *StoreHandler) AddPassword(cmd *cobra.Command, args []string) error {
 	service := args[0]
 	storeName := h.getStoreName(cmd)
-	
+
 	fmt.Printf("🔐 Adding password for '%s' to store '%s'\n", service, storeName)
-	
+
 	// Check if we have an encrypted repository (Phase 1B)
 	if h.repository != nil {
 		// Try to load the store (in case it's not loaded yet)
@@ -304,20 +304,20 @@ func (h *StoreHandler) AddPassword(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to load store '%s': %v\nHint: Initialize the store first with: passgen store init %s", storeName, err, storeName)
 		}
-		
+
 		// Get additional password details
 		username, _ := cmd.Flags().GetString("username")
-		url, _ := cmd.Flags().GetString("url") 
+		url, _ := cmd.Flags().GetString("url")
 		notes, _ := cmd.Flags().GetString("notes")
 		length, _ := cmd.Flags().GetInt("length")
-		
+
 		// Get auto-rotation settings
 		autoRotateDays, _ := cmd.Flags().GetInt("auto-rotate")
 		notifyBefore, _ := cmd.Flags().GetInt("notify-before")
-		
+
 		// Generate password
 		password := h.generatePassword(length)
-		
+
 		// Create password entry
 		entry := entities.PasswordEntry{
 			Service:     service,
@@ -330,7 +330,7 @@ func (h *StoreHandler) AddPassword(cmd *cobra.Command, args []string) error {
 			UpdatedAt:   time.Now(),
 			GeneratedBy: "passgen-cli",
 		}
-		
+
 		// Add auto-rotation config if specified
 		if autoRotateDays > 0 {
 			entry.AutoRotation = &entities.AutoRotationConfig{
@@ -348,12 +348,12 @@ func (h *StoreHandler) AddPassword(cmd *cobra.Command, args []string) error {
 				},
 			}
 		}
-		
+
 		// Save to encrypted repository
 		if err := h.repository.AddPassword(storeName, entry); err != nil {
 			return fmt.Errorf("failed to save password: %w", err)
 		}
-		
+
 		fmt.Printf("✅ Successfully added password for '%s'\n", service)
 		fmt.Printf("📝 Username: %s\n", username)
 		fmt.Printf("🔗 URL: %s\n", url)
@@ -361,19 +361,19 @@ func (h *StoreHandler) AddPassword(cmd *cobra.Command, args []string) error {
 			fmt.Printf("📄 Notes: %s\n", notes)
 		}
 		fmt.Printf("🔑 Password: %s\n", password)
-		
+
 		// Show auto-rotation info if enabled
 		if entry.AutoRotation != nil && entry.AutoRotation.Enabled {
-			fmt.Printf("🔄 Auto-rotation: Every %d days (next: %s)\n", 
+			fmt.Printf("🔄 Auto-rotation: Every %d days (next: %s)\n",
 				entry.AutoRotation.IntervalDays,
 				entry.AutoRotation.NextRotationAt.Format("2006-01-02"))
 		}
-		
+
 		fmt.Printf("⚠️  Make sure to save this password securely!\n")
-		
+
 		return nil
 	}
-	
+
 	// Fallback to Phase 1A demo mode
 	fmt.Printf("📝 This will be implemented in Phase 1B with full GPG encryption\n")
 	return nil
@@ -382,7 +382,7 @@ func (h *StoreHandler) AddPassword(cmd *cobra.Command, args []string) error {
 // ListPasswords lists all passwords in the store
 func (h *StoreHandler) ListPasswords(cmd *cobra.Command, args []string) error {
 	storeName := h.getStoreName(cmd)
-	
+
 	// Check if we have an encrypted repository (Phase 1B)
 	if h.repository != nil {
 		// Try to load the store
@@ -390,34 +390,34 @@ func (h *StoreHandler) ListPasswords(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to load store '%s': %v", storeName, err)
 		}
-		
+
 		// Get all passwords from the repository
 		passwords, err := h.repository.ListPasswords(storeName)
 		if err != nil {
 			return fmt.Errorf("failed to list passwords: %w", err)
 		}
-		
+
 		if len(passwords) == 0 {
 			fmt.Printf("📦 No passwords found in store '%s'\n", storeName)
 			fmt.Printf("💡 Add a password with: passgen store add <service> --store %s\n", storeName)
 			return nil
 		}
-		
+
 		h.cardDisplay.DisplayPasswordList(passwords, storeName)
 		return nil
 	}
-	
+
 	// Fallback to Phase 1A demo mode
 	mockPasswords := h.createMockPasswordList()
 	h.cardDisplay.DisplayPasswordList(mockPasswords, storeName)
-	
+
 	return nil
 }
 
 // RotationStatus shows rotation status for auto-rotation enabled passwords
 func (h *StoreHandler) RotationStatus(cmd *cobra.Command, args []string) error {
 	storeName := h.getStoreName(cmd)
-	
+
 	// Check if we have an encrypted repository (Phase 1B)
 	if h.repository != nil {
 		// Try to load the store
@@ -425,21 +425,21 @@ func (h *StoreHandler) RotationStatus(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to load store '%s': %v", storeName, err)
 		}
-		
+
 		// Get all passwords from the store
 		passwords, err := h.repository.ListPasswords(storeName)
 		if err != nil {
 			return fmt.Errorf("failed to list passwords: %w", err)
 		}
-		
+
 		// Filter passwords with auto-rotation and create rotation statuses
 		var rotationStatuses []entities.RotationStatus
 		now := time.Now()
-		
+
 		for _, password := range passwords {
 			if password.AutoRotation != nil && password.AutoRotation.Enabled {
 				daysUntil := int(password.AutoRotation.NextRotation.Sub(now).Hours() / 24)
-				
+
 				var status string
 				if daysUntil <= 0 {
 					status = "overdue"
@@ -450,7 +450,7 @@ func (h *StoreHandler) RotationStatus(cmd *cobra.Command, args []string) error {
 				} else {
 					status = "scheduled"
 				}
-				
+
 				rotationStatus := entities.RotationStatus{
 					Service:       password.Service,
 					Status:        status,
@@ -458,26 +458,26 @@ func (h *StoreHandler) RotationStatus(cmd *cobra.Command, args []string) error {
 					DaysUntilNext: daysUntil,
 					IntervalDays:  password.AutoRotation.IntervalDays,
 				}
-				
+
 				rotationStatuses = append(rotationStatuses, rotationStatus)
 			}
 		}
-		
+
 		h.cardDisplay.DisplayRotationStatus(rotationStatuses, storeName)
 		return nil
 	}
-	
+
 	// Fallback to Phase 1A demo mode
 	mockStatuses := h.createMockRotationStatuses()
 	h.cardDisplay.DisplayRotationStatus(mockStatuses, storeName)
-	
+
 	return nil
 }
 
-// CheckRotations checks for due password rotations
+// Identifies and notifies about passwords requiring immediate or upcoming rotation
 func (h *StoreHandler) CheckRotations(cmd *cobra.Command, args []string) error {
 	storeName := h.getStoreName(cmd)
-	
+
 	fmt.Printf("🔍 Checking rotation schedule for store '%s'...\n\n", storeName)
 	fmt.Printf("🚨 URGENT - Passwords requiring immediate rotation:\n")
 	fmt.Printf("• database (2 days overdue)\n")
@@ -489,7 +489,7 @@ func (h *StoreHandler) CheckRotations(cmd *cobra.Command, args []string) error {
 	fmt.Printf("💡 Actions:\n")
 	fmt.Printf("  passgen store rotate-now database    # Rotate immediately\n")
 	fmt.Printf("  passgen store snooze aws-prod 7      # Postpone 7 days\n")
-	
+
 	return nil
 }
 
@@ -631,7 +631,7 @@ func (h *StoreHandler) loadStoreIfExists(storeName string) error {
 
 	// Load the store based on its configuration
 	gpgService := gpg.NewGPGService(storeConfig.GPGKeyID)
-	
+
 	if storeConfig.LocalOnly {
 		// Load local-only store
 		encStorage := storage.NewLocalOnlyEncryptedStorage(storeConfig.Path, gpgService)
@@ -649,7 +649,7 @@ func (h *StoreHandler) loadStoreIfExists(storeName string) error {
 	return nil
 }
 
-// generatePassword generates a password of the specified length
+// Creates secure random password with specified character length
 func (h *StoreHandler) generatePassword(length int) string {
 	// This is a simplified implementation - in production we'd inject the password service
 	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"

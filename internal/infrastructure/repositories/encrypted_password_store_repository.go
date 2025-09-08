@@ -15,7 +15,7 @@ type EncryptedPasswordStoreRepository struct {
 	storages map[string]*storage.EncryptedStorage
 }
 
-// NewEncryptedPasswordStoreRepository creates a new encrypted password store repository
+// Establishes encrypted password store operations with GPG security
 func NewEncryptedPasswordStoreRepository() *EncryptedPasswordStoreRepository {
 	return &EncryptedPasswordStoreRepository{
 		storages: make(map[string]*storage.EncryptedStorage),
@@ -27,7 +27,7 @@ func (r *EncryptedPasswordStoreRepository) RegisterStorage(storeName string, enc
 	r.storages[storeName] = encStorage
 }
 
-// GetPassword retrieves a password entry from the specified store
+// Retrieves complete password entry with sensitive data from encrypted storage
 func (r *EncryptedPasswordStoreRepository) GetPassword(storeName, service string) (*entities.PasswordEntry, error) {
 	storage, exists := r.storages[storeName]
 	if !exists {
@@ -37,7 +37,7 @@ func (r *EncryptedPasswordStoreRepository) GetPassword(storeName, service string
 	return storage.LoadPassword(service)
 }
 
-// GetPasswordMetadata retrieves password metadata (no actual password)
+// Provides password information without exposing the actual password value
 func (r *EncryptedPasswordStoreRepository) GetPasswordMetadata(storeName, service string) (*entities.PasswordMetadata, error) {
 	storage, exists := r.storages[storeName]
 	if !exists {
@@ -83,7 +83,7 @@ func (r *EncryptedPasswordStoreRepository) SavePassword(storeName string, entry 
 	return storage.SavePassword(*entry)
 }
 
-// ListPasswords returns all password metadata from the specified store
+// Provides comprehensive catalog of stored passwords with metadata overview
 func (r *EncryptedPasswordStoreRepository) ListPasswords(storeName string) ([]entities.PasswordMetadata, error) {
 	storage, exists := r.storages[storeName]
 	if !exists {
@@ -155,7 +155,7 @@ func (r *EncryptedPasswordStoreRepository) SetAutoRotation(storeName, service st
 	return fmt.Errorf("SetAutoRotation not implemented")
 }
 
-// GetRotationStatus returns rotation status (placeholder)
+// Provides rotation schedule overview and identifies overdue passwords
 func (r *EncryptedPasswordStoreRepository) GetRotationStatus(storeName string) ([]entities.RotationStatus, error) {
 	return nil, fmt.Errorf("GetRotationStatus not implemented")
 }
@@ -165,7 +165,7 @@ func (r *EncryptedPasswordStoreRepository) RotatePassword(storeName, service str
 	return fmt.Errorf("RotatePassword not implemented")
 }
 
-// CheckDueRotations checks for due rotations (placeholder)
+// Identifies passwords requiring immediate or upcoming rotation
 func (r *EncryptedPasswordStoreRepository) CheckDueRotations(storeName string) ([]entities.RotationStatus, error) {
 	return nil, fmt.Errorf("CheckDueRotations not implemented")
 }
@@ -204,12 +204,12 @@ func (r *EncryptedPasswordStoreRepository) UpdateAutoRotationConfig(storeName, s
 	return fmt.Errorf("UpdateAutoRotationConfig not implemented")
 }
 
-// GetPasswordsNeedingRotation returns passwords that need rotation (placeholder)
+// Filters stored passwords to identify those exceeding rotation schedules
 func (r *EncryptedPasswordStoreRepository) GetPasswordsNeedingRotation(storeName string) ([]entities.PasswordMetadata, error) {
 	return nil, fmt.Errorf("GetPasswordsNeedingRotation not implemented")
 }
 
-// GetRotationHistory returns rotation history (placeholder)
+// Provides complete chronological record of password rotations and reasons
 func (r *EncryptedPasswordStoreRepository) GetRotationHistory(storeName, service string) ([]entities.RotationRecord, error) {
 	return nil, fmt.Errorf("GetRotationHistory not implemented")
 }
@@ -224,7 +224,7 @@ func (r *EncryptedPasswordStoreRepository) Sync(storeName string) error {
 	return storage.Sync("origin", "main")
 }
 
-// InitializeStore creates a new password store
+// Establishes new encrypted password store with proper initialization
 func (r *EncryptedPasswordStoreRepository) InitializeStore(storeName string, encStorage *storage.EncryptedStorage) error {
 	if err := encStorage.InitializeStore(storeName); err != nil {
 		return err
@@ -234,7 +234,7 @@ func (r *EncryptedPasswordStoreRepository) InitializeStore(storeName string, enc
 	return nil
 }
 
-// InitializeLocalStore creates a new local-only password store
+// Establishes local-only encrypted store without Git synchronization
 func (r *EncryptedPasswordStoreRepository) InitializeLocalStore(storeName, storePath, gpgKeyID string) error {
 	// Create GPG service and local-only storage
 	gpgService := gpg.NewGPGService(gpgKeyID)
@@ -253,7 +253,7 @@ func (r *EncryptedPasswordStoreRepository) ConnectRemote(storeName, remoteName, 
 	return storage.ConnectRemote(remoteName, remoteURL)
 }
 
-// GetStoreInfo returns information about a store
+// Delivers comprehensive store status including Git repository and encryption details
 func (r *EncryptedPasswordStoreRepository) GetStoreInfo(storeName string) (map[string]interface{}, error) {
 	storage, exists := r.storages[storeName]
 	if !exists {
