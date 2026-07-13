@@ -47,6 +47,7 @@ type PasswordConfig struct {
 	ExcludeSimilar bool
 	ExcludeChars   string
 	Count          int
+	NoRepeat       bool
 }
 
 // Validate ensures the password configuration is valid

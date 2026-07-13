@@ -180,6 +180,7 @@ func (h *Handler) addFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&h.config.IncludeSymbols, "symbols", "s", true, "Include symbols")
 	cmd.Flags().BoolVar(&h.config.ExcludeSimilar, "exclude-similar", false, "Exclude similar characters (il1Lo0O)")
 	cmd.Flags().StringVar(&h.config.ExcludeChars, "exclude", "", "Characters to exclude from password")
+	cmd.Flags().BoolVar(&h.config.NoRepeat, "no-repeat", false, "Avoid duplicate characters (trades ~2 bits entropy for pattern resistance)")
 	cmd.Flags().IntVarP(&h.config.Count, "count", "c", 1, "Number of passwords to generate")
 
 	// Add convenience flags

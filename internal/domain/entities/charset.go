@@ -23,50 +23,67 @@ func NewCharacterSet() *CharacterSet {
 
 // BuildCharset builds a character set based on the provided configuration
 func (cs *CharacterSet) BuildCharset(config PasswordConfig) (string, error) {
-	if err := config.Validate(); err != nil {
+	categories, err := cs.BuildCategories(config)
+	if err != nil {
 		return "", err
 	}
 
-	charset := ""
-
-	if config.IncludeLower {
-		charset += Lowercase
-	}
-	if config.IncludeUpper {
-		charset += Uppercase
-	}
-	if config.IncludeNumbers {
-		charset += Numbers
-	}
-	if config.IncludeSymbols {
-		charset += Symbols
-	}
-
-	if charset == "" {
-		return "", NewPasswordError("no character sets selected")
-	}
-
-	// Remove similar characters if requested
-	if config.ExcludeSimilar {
-		similar := "il1Lo0O"
-		for _, char := range similar {
-			charset = strings.ReplaceAll(charset, string(char), "")
-		}
-	}
-
-	// Remove excluded characters
-	if config.ExcludeChars != "" {
-		for _, char := range config.ExcludeChars {
-			charset = strings.ReplaceAll(charset, string(char), "")
-		}
-	}
-
-	if len(charset) == 0 {
-		return "", NewPasswordError("no characters available after exclusions")
-	}
+	charset := strings.Join(categories, "")
 
 	cs.charset = charset
 	return charset, nil
+}
+
+// BuildCategories returns individual character categories after applying exclusions.
+// Each enabled category (lowercase, uppercase, numbers, symbols) is returned as a
+// separate string with similar and explicitly excluded characters removed.
+func (cs *CharacterSet) BuildCategories(config PasswordConfig) ([]string, error) {
+	if err := config.Validate(); err != nil {
+		return nil, err
+	}
+
+	applyExclusions := func(s string) string {
+		if config.ExcludeSimilar {
+			similar := "il1Lo0O"
+			for _, char := range similar {
+				s = strings.ReplaceAll(s, string(char), "")
+			}
+		}
+		if config.ExcludeChars != "" {
+			for _, char := range config.ExcludeChars {
+				s = strings.ReplaceAll(s, string(char), "")
+			}
+		}
+		return s
+	}
+
+	var categories []string
+	if config.IncludeLower {
+		categories = append(categories, applyExclusions(Lowercase))
+	}
+	if config.IncludeUpper {
+		categories = append(categories, applyExclusions(Uppercase))
+	}
+	if config.IncludeNumbers {
+		categories = append(categories, applyExclusions(Numbers))
+	}
+	if config.IncludeSymbols {
+		categories = append(categories, applyExclusions(Symbols))
+	}
+
+	// Filter out empty categories (all characters excluded)
+	var nonEmpty []string
+	for _, cat := range categories {
+		if cat != "" {
+			nonEmpty = append(nonEmpty, cat)
+		}
+	}
+
+	if len(nonEmpty) == 0 {
+		return nil, NewPasswordError("no characters available after exclusions")
+	}
+
+	return nonEmpty, nil
 }
 
 // CalculateCharsetSize calculates the size of the character set for entropy calculation
