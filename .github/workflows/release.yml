@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Tag to release'
         required: true
-        default: 'v1.1.0'
+        default: 'v1.2.0'
 
 permissions:
   contents: write
@@ -82,18 +82,19 @@ jobs:
         body: |
           ## What's New in ${{ steps.version.outputs.VERSION }}
           
-          🎯 **Word-Based Password Generation** - Transform memorable words into secure passwords!
+          🔒 **Improved Password Generation Security** - More control and better defaults!
           
           ### New Features:
-          - `passgen word "yourword"` - Generate passwords based on words
-          - Multiple transformation strategies: leetspeak, mixed-case, hybrid, etc.
-          - Complexity levels: low, medium, high
-          - Generate multiple variations with `--count`
+          - `--no-repeat` flag — Generate passwords with no duplicate characters
+          - Guaranteed character-type coverage when using `--no-repeat`
+          - Cryptographically secure Fisher-Yates shuffle for no-repeat mode
+          - Batch uniqueness — `GenerateMultiplePasswords` guarantees unique results
           
           ### Improvements:
-          - Enhanced password display with prominent boxes
-          - Cleaner output focusing on the password first
-          - Maintained sarcastic security comments for fun
+          - Default generation maximizes entropy (with-replacement sampling)
+          - `BuildCategories` method for per-category charset construction
+          - Slant ASCII banner on `--version` and `--help`
+          - Tidied README with updated docs and examples
           
           ### Download:
           Choose the appropriate binary for your platform from the assets below.
