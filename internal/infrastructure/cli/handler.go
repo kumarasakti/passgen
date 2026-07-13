@@ -33,15 +33,32 @@ func NewHandler() *Handler {
 	}
 }
 
+// createBanner returns the ASCII art banner with version info
+func (h *Handler) createBanner(version string) string {
+	return fmt.Sprintf(`
+    ____  ____ _______________ ____  ____ 
+   / __ \/ __ ` + "`" + `/ ___/ ___/ __ ` + "`" + `/ _ \/ __ \
+  / /_/ / /_/ (__  |__  ) /_/ /  __/ / / /
+ / .___/\__,_/____/____/\__, /\___/_/ /_/ 
+/_/                    /____/             
+
+  passgen %s
+  Cryptographically secure password generation
+`, version)
+}
+
 // CreateRootCommand creates and configures the root command
 func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "passgen",
 		Short:   "Generate secure passwords",
-		Long:    "passgen is a command-line tool for generating secure passwords.",
+		Long:    h.createBanner(version),
 		Version: version,
 		Run:     h.HandleGeneratePassword,
 	}
+
+	// Set custom version template with banner
+	rootCmd.SetVersionTemplate(h.createBanner(version) + "\n")
 
 	// Add flags
 	h.addFlags(rootCmd)
@@ -180,6 +197,7 @@ func (h *Handler) addFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&h.config.IncludeSymbols, "symbols", "s", true, "Include symbols")
 	cmd.Flags().BoolVar(&h.config.ExcludeSimilar, "exclude-similar", false, "Exclude similar characters (il1Lo0O)")
 	cmd.Flags().StringVar(&h.config.ExcludeChars, "exclude", "", "Characters to exclude from password")
+	cmd.Flags().BoolVar(&h.config.NoRepeat, "no-repeat", false, "Avoid duplicate characters (trades ~2 bits entropy for pattern resistance)")
 	cmd.Flags().IntVarP(&h.config.Count, "count", "c", 1, "Number of passwords to generate")
 
 	// Add convenience flags
