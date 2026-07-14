@@ -8,6 +8,7 @@ import (
 // PassgenConfig represents the user's passgen configuration stored at ~/.passgen/config.yaml
 type PassgenConfig struct {
 	Generation GenerationConfig `yaml:"generation"`
+	Word       WordConfig       `yaml:"word"`
 }
 
 // GenerationConfig holds default password generation preferences
@@ -23,6 +24,13 @@ type GenerationConfig struct {
 	Count          int    `yaml:"count"`
 }
 
+// WordConfig holds default word-based password generation preferences
+type WordConfig struct {
+	Strategy   string `yaml:"strategy"`
+	Complexity string `yaml:"complexity"`
+	Count      int    `yaml:"count"`
+}
+
 // DefaultPassgenConfig returns the default configuration matching the CLI defaults
 func DefaultPassgenConfig() PassgenConfig {
 	return PassgenConfig{
@@ -36,6 +44,11 @@ func DefaultPassgenConfig() PassgenConfig {
 			ExcludeChars:   "",
 			NoRepeat:       false,
 			Count:          1,
+		},
+		Word: WordConfig{
+			Strategy:   "hybrid",
+			Complexity: "medium",
+			Count:      1,
 		},
 	}
 }

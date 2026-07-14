@@ -88,6 +88,7 @@ func (cm *ConfigManager) Set(key string, value string) error {
 	}
 
 	g := &config.Generation
+	w := &config.Word
 	switch key {
 	case "length":
 		var n int
@@ -115,8 +116,18 @@ func (cm *ConfigManager) Set(key string, value string) error {
 			return fmt.Errorf("invalid value for count: %s", value)
 		}
 		g.Count = n
+	case "word_strategy":
+		w.Strategy = value
+	case "word_complexity":
+		w.Complexity = value
+	case "word_count":
+		var n int
+		if _, err := fmt.Sscanf(value, "%d", &n); err != nil {
+			return fmt.Errorf("invalid value for word_count: %s", value)
+		}
+		w.Count = n
 	default:
-		return fmt.Errorf("unknown config key: %s (valid keys: length, include_lower, include_upper, include_numbers, include_symbols, exclude_similar, exclude_chars, no_repeat, count)", key)
+		return fmt.Errorf("unknown config key: %s (valid keys: length, include_lower, include_upper, include_numbers, include_symbols, exclude_similar, exclude_chars, no_repeat, count, word_strategy, word_complexity, word_count)", key)
 	}
 
 	return cm.Save(config)

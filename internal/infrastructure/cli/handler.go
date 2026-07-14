@@ -14,6 +14,7 @@ type Handler struct {
 	passwordService *application.PasswordService
 	formatter       *Formatter
 	config          entities.PasswordConfig
+	wordConfig      entities.WordConfig
 	configManager   *application.ConfigManager
 }
 
@@ -38,6 +39,7 @@ func NewHandler() *Handler {
 		passwordService: application.NewPasswordService(),
 		formatter:       NewFormatter(),
 		config:          pc.ToPasswordConfig(),
+		wordConfig:      pc.Word,
 		configManager:   cm,
 	}
 }
@@ -297,10 +299,10 @@ Examples:
 		Run:  h.HandleWordPassword,
 	}
 
-	// Add word-specific flags
-	wordCmd.Flags().String("strategy", "hybrid", "Transformation strategy (leetspeak, mixed-case, suffix, prefix, insert, hybrid)")
-	wordCmd.Flags().String("complexity", "medium", "Complexity level (low, medium, high)")
-	wordCmd.Flags().IntP("count", "c", 1, "Number of password variations to generate")
+	// Add word-specific flags (defaults from config file)
+	wordCmd.Flags().String("strategy", h.wordConfig.Strategy, "Transformation strategy (leetspeak, mixed-case, suffix, prefix, insert, hybrid)")
+	wordCmd.Flags().String("complexity", h.wordConfig.Complexity, "Complexity level (low, medium, high)")
+	wordCmd.Flags().IntP("count", "c", h.wordConfig.Count, "Number of password variations to generate")
 
 	return wordCmd
 }

@@ -69,13 +69,17 @@ func (h *ConfigHandler) createSetCommand() *cobra.Command {
 		Short: "Set a configuration value",
 		Long: `Set a single configuration value. Valid keys:
   length, include_lower, include_upper, include_numbers, include_symbols,
-  exclude_similar, exclude_chars, no_repeat, count
+  exclude_similar, exclude_chars, no_repeat, count,
+  word_strategy, word_complexity, word_count
 
 Examples:
   passgen config set length 20
   passgen config set include_numbers true
   passgen config set no_repeat true
-  passgen config set exclude_chars "!#"`,
+  passgen config set exclude_chars "!#"
+  passgen config set word_strategy leetspeak
+  passgen config set word_complexity high
+  passgen config set word_count 5`,
 		Args: cobra.ExactArgs(2),
 		RunE:  h.handleSet,
 	}
@@ -143,4 +147,10 @@ func printConfig(config entities.PassgenConfig) {
 	fmt.Printf("  exclude_chars:    %q\n", g.ExcludeChars)
 	fmt.Printf("  no_repeat:        %v\n", g.NoRepeat)
 	fmt.Printf("  count:            %d\n", g.Count)
+
+	w := config.Word
+	fmt.Printf("\nword:\n")
+	fmt.Printf("  strategy:         %s\n", w.Strategy)
+	fmt.Printf("  complexity:       %s\n", w.Complexity)
+	fmt.Printf("  count:            %d\n", w.Count)
 }
