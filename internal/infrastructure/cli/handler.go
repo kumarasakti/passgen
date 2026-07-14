@@ -14,22 +14,31 @@ type Handler struct {
 	passwordService *application.PasswordService
 	formatter       *Formatter
 	config          entities.PasswordConfig
+	configManager   *application.ConfigManager
 }
 
-// NewHandler creates a new CLI handler
+// NewHandler creates a new CLI handler, loading config from ~/.passgen/config.yaml if it exists
 func NewHandler() *Handler {
+	cm, err := application.NewConfigManager()
+	if err != nil {
+		cm = nil
+	}
+
+	var pc entities.PassgenConfig
+	if cm != nil {
+		pc, err = cm.Load()
+		if err != nil {
+			pc = entities.DefaultPassgenConfig()
+		}
+	} else {
+		pc = entities.DefaultPassgenConfig()
+	}
+
 	return &Handler{
 		passwordService: application.NewPasswordService(),
 		formatter:       NewFormatter(),
-		config: entities.PasswordConfig{
-			Length:         entities.DefaultLength,
-			IncludeLower:   true,
-			IncludeUpper:   true,
-			IncludeNumbers: false,
-			IncludeSymbols: true,
-			ExcludeSimilar: false,
-			Count:          1,
-		},
+		config:          pc.ToPasswordConfig(),
+		configManager:   cm,
 	}
 }
 
@@ -67,6 +76,10 @@ func (h *Handler) CreateRootCommand(version string) *cobra.Command {
 	rootCmd.AddCommand(h.createCheckCommand())
 	rootCmd.AddCommand(h.createPresetCommand())
 	rootCmd.AddCommand(h.createWordCommand())
+
+	// Add config subcommand
+	configHandler := NewConfigHandler()
+	rootCmd.AddCommand(configHandler.CreateCommands())
 
 	return rootCmd
 }
@@ -188,45 +201,55 @@ func (h *Handler) HandleWordPassword(cmd *cobra.Command, args []string) {
 	fmt.Print(output)
 }
 
-// addFlags adds command line flags to the root command
+// addFlags adds command line flags to the root command.
+// Flag defaults come from the config file (loaded in NewHandler), so if the
+// user doesn't pass a flag, the config file value is used. If a flag IS passed,
+// cobra overwrites the value automatically.
 func (h *Handler) addFlags(cmd *cobra.Command) {
-	cmd.Flags().IntVarP(&h.config.Length, "length", "l", entities.DefaultLength, "Password length")
-	cmd.Flags().BoolVar(&h.config.IncludeLower, "lower", true, "Include lowercase letters")
-	cmd.Flags().BoolVar(&h.config.IncludeUpper, "upper", true, "Include uppercase letters")
-	cmd.Flags().BoolVarP(&h.config.IncludeNumbers, "numbers", "n", false, "Include numbers")
-	cmd.Flags().BoolVarP(&h.config.IncludeSymbols, "symbols", "s", true, "Include symbols")
-	cmd.Flags().BoolVar(&h.config.ExcludeSimilar, "exclude-similar", false, "Exclude similar characters (il1Lo0O)")
-	cmd.Flags().StringVar(&h.config.ExcludeChars, "exclude", "", "Characters to exclude from password")
-	cmd.Flags().BoolVar(&h.config.NoRepeat, "no-repeat", false, "Avoid duplicate characters (trades ~2 bits entropy for pattern resistance)")
-	cmd.Flags().IntVarP(&h.config.Count, "count", "c", 1, "Number of passwords to generate")
+	cmd.Flags().IntVarP(&h.config.Length, "length", "l", h.config.Length, "Password length")
+	cmd.Flags().BoolVar(&h.config.IncludeLower, "lower", h.config.IncludeLower, "Include lowercase letters")
+	cmd.Flags().BoolVar(&h.config.IncludeUpper, "upper", h.config.IncludeUpper, "Include uppercase letters")
+	cmd.Flags().BoolVarP(&h.config.IncludeNumbers, "numbers", "n", h.config.IncludeNumbers, "Include numbers")
+	cmd.Flags().BoolVarP(&h.config.IncludeSymbols, "symbols", "s", h.config.IncludeSymbols, "Include symbols")
+	cmd.Flags().BoolVar(&h.config.ExcludeSimilar, "exclude-similar", h.config.ExcludeSimilar, "Exclude similar characters (il1Lo0O)")
+	cmd.Flags().StringVar(&h.config.ExcludeChars, "exclude", h.config.ExcludeChars, "Characters to exclude from password")
+	cmd.Flags().BoolVar(&h.config.NoRepeat, "no-repeat", h.config.NoRepeat, "Avoid duplicate characters (trades ~2 bits entropy for pattern resistance)")
+	cmd.Flags().IntVarP(&h.config.Count, "count", "c", h.config.Count, "Number of passwords to generate")
 
-	// Add convenience flags
+	// Add convenience flags (always default false — only override if explicitly passed)
 	cmd.Flags().BoolP("secure", "S", false, "Generate secure password (includes all character types)")
 	cmd.Flags().BoolP("simple", "m", false, "Generate simple password (only letters and numbers)")
 	cmd.Flags().BoolP("alphanumeric", "a", false, "Generate alphanumeric password (letters and numbers)")
 }
 
-// handleConvenienceFlags processes convenience flags that modify configuration
+// handleConvenienceFlags processes convenience flags that override config defaults.
+// Only applies when the user explicitly passes the flag (not when it's just the default false).
 func (h *Handler) handleConvenienceFlags(cmd *cobra.Command) {
-	if secure, _ := cmd.Flags().GetBool("secure"); secure {
-		h.config.IncludeLower = true
-		h.config.IncludeUpper = true
-		h.config.IncludeNumbers = true
-		h.config.IncludeSymbols = true
+	if cmd.Flags().Changed("secure") {
+		if secure, _ := cmd.Flags().GetBool("secure"); secure {
+			h.config.IncludeLower = true
+			h.config.IncludeUpper = true
+			h.config.IncludeNumbers = true
+			h.config.IncludeSymbols = true
+		}
 	}
 
-	if simple, _ := cmd.Flags().GetBool("simple"); simple {
-		h.config.IncludeLower = true
-		h.config.IncludeUpper = true
-		h.config.IncludeNumbers = true
-		h.config.IncludeSymbols = false
+	if cmd.Flags().Changed("simple") {
+		if simple, _ := cmd.Flags().GetBool("simple"); simple {
+			h.config.IncludeLower = true
+			h.config.IncludeUpper = true
+			h.config.IncludeNumbers = true
+			h.config.IncludeSymbols = false
+		}
 	}
 
-	if alphanumeric, _ := cmd.Flags().GetBool("alphanumeric"); alphanumeric {
-		h.config.IncludeLower = true
-		h.config.IncludeUpper = true
-		h.config.IncludeNumbers = true
-		h.config.IncludeSymbols = false
+	if cmd.Flags().Changed("alphanumeric") {
+		if alphanumeric, _ := cmd.Flags().GetBool("alphanumeric"); alphanumeric {
+			h.config.IncludeLower = true
+			h.config.IncludeUpper = true
+			h.config.IncludeNumbers = true
+			h.config.IncludeSymbols = false
+		}
 	}
 }
 
